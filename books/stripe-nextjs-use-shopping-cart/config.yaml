@@ -1,9 +1,15 @@
-title: ""
+title: "Next.jsとStripeではじめるシンプルなECサイト開発ワークショップ"
 summary: ""
 topics: []
 published: false
 price: 0 # 有料の場合200〜5000
 # 本に含めるチャプターを順番に並べましょう
 chapters:
-  - example1
-  - example2
+  - step0
+  - step1_setup_nextjs
+  - step2_create_product_catalog
+  - step3_show_products
+  - step4_simple_checkout
+  - step5_use_shopping_cart
+  - step6_webhook 
+  - stepx
