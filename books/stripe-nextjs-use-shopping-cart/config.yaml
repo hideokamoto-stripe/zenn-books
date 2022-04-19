@@ -13,5 +13,6 @@ chapters:
   - step3_show_products
   - step4_simple_checkout
   - step5_use_shopping_cart
+  - step5-1_product_detail_page
   - step6_webhook 
   - stepx
