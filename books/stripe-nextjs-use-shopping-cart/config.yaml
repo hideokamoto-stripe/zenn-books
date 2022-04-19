@@ -1,12 +1,14 @@
 title: "Next.jsとStripeではじめるシンプルなECサイト開発ワークショップ"
-summary: ""
-topics: []
+summary: "Next.jsを利用することで、より多様なwebサイト・アプリケーションを開発できるようになります。今回のワークショップでは、Next.jsとStripeを利用した、シンプルなECサイトをフルスクラッチする方法を体験できます。"
+topics: ['react','nextjs','stripe']
 published: false
-price: 0 # 有料の場合200〜5000
+price: 0
 # 本に含めるチャプターを順番に並べましょう
 chapters:
   - step0
   - step1_setup_nextjs
+  - step1-1_nextjs_ssg
+  - step1-2_nextjs_ssr
   - step2_create_product_catalog
   - step3_show_products
   - step4_simple_checkout
