@@ -271,7 +271,13 @@ npx next start -p 3100
 ready - started server on 0.0.0.0:3100, url: http://localhost:3100
 ```
 
+## おさらい
 
+- Next.jsでREST APIを作れる
+- `getServerSideProps`を使って、サーバー側でAPIを呼び出すことができる
+- サーバー側の機能を利用すると、`next export`が使えなくなる
+
+次のステップでは、Stripeを利用してサイトに表示する商品データの登録を行います。
 ## 「早く終わった」という方のための、もう１ステップ
 
 APIエラーが発生した場合、デモコードではエラーを握りつぶして、代わりに「商品数０件」として結果を返します。
