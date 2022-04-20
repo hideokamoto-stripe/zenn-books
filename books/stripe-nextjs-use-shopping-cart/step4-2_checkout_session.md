@@ -183,14 +183,11 @@ export default function Home({products}) {
 ここまでで、商品毎に注文を行う機能の実装に成功しました。
 次のステップでは、複数の商品をまとめて注文できる「カート機能」を実装します。
 
-##　「早く終わった」という方のための、もう１ステップ
+## 「早く終わった」という方のための、もう１ステップ
+
 
 Stripe Checkoutのセッション作成APIには、さまざまなオプションが用意されています。
 
 ドキュメントを参考に、`expires_at`などの未紹介パラメーターについても試してみましょう。
 
 https://stripe.com/docs/api/checkout/sessions/create
-
-また、以下の記事を参考に、「その場限りの料金」での決済ページを作る方法についてもチャレンジしてみましょう。
-
-https://qiita.com/hideokamoto/items/6bd31422e2ebb27d4eaa
