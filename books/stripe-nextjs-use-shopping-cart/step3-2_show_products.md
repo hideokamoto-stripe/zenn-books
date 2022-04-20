@@ -41,7 +41,7 @@ export default function Home() {
 
 ![](https://storage.googleapis.com/zenn-user-upload/55db090939bd-20220420.png)
 
-## React Bootstrapで見た目を整える
+## Bootstrapで見た目を整える
 
 取得したデータを、商品一覧らしく整形しましょう。
 

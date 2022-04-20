@@ -12,7 +12,8 @@ chapters:
   - step2_create_product_catalog
   - step3-1_list_products
   - step3-2_show_products
-  - step4_simple_checkout
+  - step4-1_client_checkout
+  - step4-2_checkout_session
   - step5_use_shopping_cart
   - step5-1_product_detail_page
   - step6_webhook 
