@@ -10,6 +10,8 @@ title: "Stripe SDKで高機能な決済フォームを追加しよう"
 
 `pages/api/checkout_session.js`を新しく作成しましょう。
 
+作成したファイルに、以下のコードを追加します。
+
 ```js
 import Stripe from 'stripe'
 
@@ -143,8 +145,7 @@ export default async function handler(req, res) {
 
 最後に注文ボタンを変更しましょう。
 
-API側でリダイレクトまで行う実装に変更したため、一旦use-shopping-cartを外します。
-代わりに、`form`タグで遷移させるようにします。
+`pages/index.js`を以下のコードを参考に変更します。
 
 ```diff jsx
 import Head from 'next/head'
@@ -166,6 +167,9 @@ export default function Home({products}) {
 +                            </form>
 
 ```
+
+API側でリダイレクトまで行う実装に変更したため、一旦use-shopping-cartを外しています。
+代わりに、`form`タグで遷移させるようにします。
 
 ここまで組み込みが終わると、先ほどはエラーになった「パッケージ価格」の商品も注文できるようになります。
 

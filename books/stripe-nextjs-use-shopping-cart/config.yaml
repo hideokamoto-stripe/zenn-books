@@ -15,6 +15,6 @@ chapters:
   - step4-1_client_checkout
   - step4-2_checkout_session
   - step5_use_shopping_cart
-  - step5-1_product_detail_page
+  #- step5-1_product_detail_page
   - step6_webhook 
   - stepx
