@@ -6,7 +6,7 @@ summary:
   なお、このワークショップドキュメントは不定期にアップデートを行います。
   内容が前回開催時と変更されている場合もございますのでご了承ください。
 topics: ['react','nextjs','stripe']
-published: false
+published: true
 price: 0
 # 本に含めるチャプターを順番に並べましょう
 chapters:
