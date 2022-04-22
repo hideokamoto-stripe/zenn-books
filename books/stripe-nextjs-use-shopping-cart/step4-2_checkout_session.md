@@ -36,6 +36,7 @@ export default async function handler(req, res) {
     if (req.method.toLocaleLowerCase() !== 'post') {
         return res.status(405).end()
     }
+-    res.status(200).end()
 +    try {
 +        const stripe = new Stripe(process.env.STRIPE_API_KEY, {
 +            apiVersion: '2020-08-27',

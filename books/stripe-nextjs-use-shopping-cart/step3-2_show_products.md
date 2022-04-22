@@ -90,8 +90,8 @@ export default function Home() {
 +                        <dl key={price.id}>
 +                          <dt>価格</dt>
 +                          <dd>
-+                            <span>{price.unit_amount.toLocaleString()} {price.currency+.toLocaleUpperCase()}</span>
-+                            {price.transform_quantity ? <small>({price.transform_quantity+.divide_by}アイテム毎)</small> : null}
++                            <span>{price.unit_amount.toLocaleString()} {price.currency.toLocaleUpperCase()}</span>
++                            {price.transform_quantity ? <small>({price.transform_quantity.divide_by}アイテム毎)</small> : null}
 +                          </dd>
 +                          <dd>
 +                            <Button>注文する</Button>

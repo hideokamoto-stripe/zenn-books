@@ -459,7 +459,7 @@ APIリクエストのBodyで`item`が送られた場合、その内容でCheckou
 また、Ajaxを利用してJSONデータを送るため、APIで直接リダイレクトせずにURLを返す形に変更しましょう。
 
 
-あとは`components/cart.js`を以下のように変更して、このAPIを呼び出しましょう。
+あとは`components/cart.jsx`を以下のように変更して、このAPIを呼び出しましょう。
 
 ```diff jsx
                 <Button

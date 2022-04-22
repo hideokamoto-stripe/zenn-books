@@ -99,7 +99,7 @@ StripeのCheckoutを利用すると、決済ページで数量やアイテムを
 まず、Stripe CLIの`stripe listen --forward-to http://localhost:3000/api/webhooks`コマンドを実行し、Webhookイベントをローカル環境に中継しましょう。
 
 ```bash
-stripe --project-name workshop listen --forward-to http://localhost:3000/api/webhooks
+stripe listen --forward-to http://localhost:3000/api/webhooks
 
 ⣯ Getting ready... > Ready! You are using Stripe API Version [2020-08-27]. Your webhook signing secret is whsec_xxxxx (^C to quit)
 ```
@@ -125,7 +125,7 @@ import Stripe from 'stripe'
 import {buffer} from 'micro'
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+const stripe = new Stripe(process.env.STRIPE_API_KEY, {
   apiVersion: '2020-08-27'
 })
 

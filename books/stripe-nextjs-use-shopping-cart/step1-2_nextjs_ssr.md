@@ -172,7 +172,7 @@ http://localhost:3000/hello-world　にアクセスして、ターミナルに�
 
 ```
 
-http://localhost:3000/hello-world　にアクセスして、APIのレスポンスデータが表示されなければOKです。
+http://localhost:3000/hello-world　にアクセスして、APIのレスポンスデータが表示されればOKです。
 
 ![](https://storage.googleapis.com/zenn-user-upload/597376dc818f-20220419.png)
 
