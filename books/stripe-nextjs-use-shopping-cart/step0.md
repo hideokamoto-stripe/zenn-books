@@ -4,6 +4,14 @@ title: "はじめに"
 
 このワークショップでは、Next.js / Stripeとuse-shopping-cartを利用して、カート機能を持つWebアプリ開発を体験できます。
 
+## 完成イメージ
+
+**商品一覧**
+![](https://storage.googleapis.com/zenn-user-upload/82b3c8adce61-20220420.png)
+
+**注文ページ**
+![](https://storage.googleapis.com/zenn-user-upload/a7b07fb2cf1c-20220420.png)
+
 ## 必須環境
 
 ワークショップまたはセルフペースでの勉強に利用する場合、以下の環境が準備できているかを事前に確認しましょう。
