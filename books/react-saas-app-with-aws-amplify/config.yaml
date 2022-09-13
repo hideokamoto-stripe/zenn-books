@@ -1,0 +1,18 @@
+title: "AWS AmplifyとStripe・ReactではじめるSaaSダッシュボード開発入門"
+summary: 
+  AWS AmplifyとStripeを利用すると、SaaSのダッシュボード開発に必要な機能のほとんどが開発できます。
+  このワークショップ本では、シンプルなReactのダッシュボードアプリに、AWS AmplifyとStripeを利用して、さまざまな機能を追加します。
+  AWSを使って、新しくサービス・アプリをローンチしたい方は、ぜひこのワークショップ資料を参考にPoCやアプリ開発をお試しください。
+topics: ['aws','stripe','react']
+published: false
+price: 0 # 有料の場合200〜5000
+# 本に含めるチャプターを順番に並べましょう
+chapters:
+  - chap0
+  - chap1
+  - chap2
+  - chap3
+  - chap4
+  - chap5
+  - chap6
+  - chapx
