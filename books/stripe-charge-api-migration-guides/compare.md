@@ -18,4 +18,6 @@ Payment Intent APIとToken / Charge APIでは、サーバー側でStripe APIを�
 |formをsubmitした時の操作|カード情報をToken化し、サーバー側で決済処理を完了する|サーバー側から取得した`client_secret`を使用し、フロントエンドで決済処理を完了する|
 |在庫管理やCRM連携などの追加アクション|`charge.succeeded` Webhook| `payment_intent.succeeded` Webhook|
 
+https://stripe.com/docs/payments/payment-intents/migration
+
 Payment Intentの作成をフォームのsubmit時まで遅延させることも可能ですが、後半で紹介する`PaymentElement`への切り替えが難しくなるため、お勧めしません。
