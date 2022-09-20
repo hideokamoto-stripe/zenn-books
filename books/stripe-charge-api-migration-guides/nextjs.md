@@ -687,3 +687,102 @@ Stripe SDKを利用した署名チェックでは、rawデータを利用しま�
 しかしNext.jsがデフォルトで適用するパーサーでは、署名チェックに失敗します。
 
 そのため、`export const config`で`bodyParser`の利用を停止させましょう。
+
+## Tips
+
+最後に、Charge APIを利用したワークフローやカスタマイズへの対応について一部紹介します。
+
+### 日本語での明細書表記に対応する
+
+Charge APIでは、`alternate_statement_descriptors`を利用して日本語の明細書表記を設定できました。
+
+```js
+await stripe.charges.create({
+    amount: 1000,
+    currency: 'jpy',
+    source: 'tok_visa',
+    description: 'Order using Charge API',
+    alternate_statement_descriptors: {
+        kana: 'ﾒｲｻｲ',
+        kanji: '明細表記'
+    }
+  })
+```
+
+Payment Intentの場合は、`payment_method_options`から設定します。
+
+```js
+await stripe.paymentIntents.create({
+    amount: 1000,
+    currency: 'jpy',
+    payment_method_types: ['card'],
+    statement_descriptor_suffix: 'example descriptor',
+    payment_method_options: {
+      card: {
+        statement_descriptor_suffix_kanji: '漢字サフィックス',
+        statement_descriptor_suffix_kana: 'カナサフィックス',
+      },
+    },
+});
+```
+
+https://qiita.com/hideokamoto/items/8eca4e1680f8aeb12ce8
+
+### オーソリのみ実施し、決済は実行しないパターンに対応する
+
+Charge APIでは、`capture: false`を設定してオーソリのみを実施できました。
+
+```js
+const charge = await stripe.charges.create({
+    amount: 1000,
+    currency: 'jpy',
+    source: 'tok_visa',
+    description: 'Order using Charge API',
+    capture: false,
+})
+
+// 決済を実施する場合の処理
+await stripe.charges.capture(charge.id)
+```
+
+Payment Intentの場合は、`capture_method`を設定しましょう。
+
+```js
+const paymentIntent = await stripe.paymentIntents.create({
+    amount: 1000,
+    currency: 'jpy',
+    payment_method_types: ['card'],
+    capture_method: 'manual'
+});
+
+// 決済を実施する場合の処理
+await stripe.paymentIntents.capture(paymentIntent.id)
+```
+
+https://stripe.com/docs/payments/place-a-hold-on-a-payment-method
+
+### PaymentIntentで、注文金額を変更する場合
+
+Payment Intentでは、フォームの入力前に決済金額や通貨を指定します。
+
+そのため、カートページでクーポンの適用や商品数を変更できるシステムでは、Payment Intentを更新する必要があります。
+
+Payment Intentの金額を変更する場合は、サーバー側でUpdate APIを実行しましょう。
+
+```js
+await stripe.paymentIntents.update('pi_xxx', {
+    amount: 1500,
+    metadata: {
+        order_id: '6735'
+    }
+});
+```
+
+この処理を実行する場合、Payment Intentを作成するAPIは**Payment IntentのID**もレスポンスに追加する必要があります。
+
+```diff
+    return res.status(201).json({
++      id: paymentIntent.id,
+      client_secret: paymentIntent.client_secret
+    })
+```
