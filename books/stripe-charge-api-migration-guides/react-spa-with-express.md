@@ -191,6 +191,9 @@ Payment Intentの場合は、事前にStripe APIを呼び出します。
 そのため、Express側で新しいAPIを追加しましょう。
 
 ```ts
+import { Stripe } from 'stripe';
+const stripe = new Stripe(process.env.STRIPE_SECRET_API_KEY)
+
 app.post('/api/payment_intent', async (req, res) => {
   const { currency, amount } = req.body
   try {
@@ -221,11 +224,6 @@ curl http://localhost:3333/api/payment_intent \
 {
   "client_secret": "pi_xxxxx_secret_yyyy"
 }
-```
-
-```diff
-+ a
-- b
 ```
 
 ## Step3: Reactで、Payment Intentを使用した決済フローに変更する
@@ -476,10 +474,10 @@ https://stripe.com/docs/payments/payment-card-element-comparison
         window.alert(`注文完了`)
       }
     }}>
--      <fieldset>
--        <legend>カード所有者</legend>
--        <input type="text" value={cardholderName} onChange={e => setCardholderName(e.target.value)}/>
--      </fieldset>
+      <fieldset>
+        <legend>カード所有者</legend>
+        <input type="text" value={cardholderName} onChange={e => setCardholderName(e.target.value)}/>
+      </fieldset>
 -      <fieldset>
 -      <legend>
 -        カード番号</legend>

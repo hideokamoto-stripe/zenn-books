@@ -33,14 +33,100 @@ success Installed "create-next-app@12.3.0" with binaries:
 **環境変数の設定(.env)**
 
 ```bash
-NX_API_STRIPE_PUBLISHABLE_API_KEY=pk_test_
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_API_KEY=pk_test_
 STRIPE_SECRET_API_KEY=sk_test_
 STRIPE_WEBHOOK_SECRET=whsec_
 ```
 
 ### Reactで決済フォームを用意する
 
-Token / Charge APIを利用した、シンプルな決済フォームを用意しましょう。
+`pages/index.jsx`を更新して、Token / Charge APIを利用した、シンプルな決済フォームを用意しましょう。
+
+```tsx
+import { useState } from 'react'
+import { CardElement, Elements, useElements, useStripe } from '@stripe/react-stripe-js'
+import { loadStripe } from '@stripe/stripe-js'
+
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_API_KEY )
+const Home = () => {
+  return (
+    <Elements stripe={stripePromise}>
+      <PaymentForm />
+    </Elements>
+  )
+}
+export default Home
+
+const PaymentForm = () => {
+  const [cardholderName, setCardholderName] = useState('')
+  const stripe = useStripe()
+  const elements = useElements()
+  return (
+    <form onSubmit={async (e) => {
+      e.preventDefault()
+      if (!stripe || !elements) return
+      const cardElement = elements.getElement(CardElement)
+      if (!cardElement) return
+      const { token, error } = await stripe.createToken(cardElement, {
+        name: cardholderName,
+      })
+      if (error) {
+        window.alert(error.message)
+        return
+      }
+      // Token化したカード情報を使って、決済を処理
+      await fetch('/api/charge', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token: token.id,
+          amount: 500,
+          currency: 'jpy',
+        })
+      }).then(data => data.json())
+      .then((result) => {
+        window.alert(`注文完了 (order_id: ${result.order_id})`)
+      })
+      
+    }}>
+      <fieldset>
+        <legend>カード所有者</legend>
+        <input type="text" value={cardholderName} onChange={e => setCardholderName(e.target.value)}/>
+      </fieldset>
+      <fieldset>
+      <legend>
+        カード番号</legend>
+        <CardElement options={{hidePostalCode: true}}/>
+      </fieldset>
+      <button type="submit">注文する</button>
+    </form>
+  )
+}
+```
+
+また、決済を処理するためのAPIとして、`pages/api/charge.js`ファイルを追加しましょう。
+
+```js
+import { Stripe } from 'stripe'
+const stripe = new Stripe(process.env.STRIPE_SECRET_API_KEY)
+
+export default async function handler(req, res) {
+    const { token, currency, amount } = req.body
+    const result = await stripe.charges.create({
+      amount,
+      currency,
+      source: token,
+      description: 'Order using Charge API'
+    })
+  
+    res.status(201).json({
+      order_id: result.id
+    })
+}
+```
 
 これでシンプルなカード決済フォームが完成しました。
 
@@ -79,8 +165,172 @@ https://stripe.com/docs/changelog
 
 https://stripe.com/docs/upgrades#api-%E3%83%90%E3%83%BC%E3%82%B8%E3%83%A7%E3%83%B3
 
-## Step2: Expressで、Payment Intentを作成するAPIを追加する
+## Step2: Payment Intentを作成するAPIを追加する
+
+続いて、Payment Intentでの決済フローを実装しましょう。
+
+Payment Intentの場合は、事前にStripe APIを呼び出します。
+
+`pages/api/payment_intents.js`ファイルを作成して、以下のコードを追加しましょう。
+
+```js
+import { Stripe } from 'stripe';
+const stripe = new Stripe(process.env.STRIPE_SECRET_API_KEY)
+
+export default async function handler(req, res) {
+    if (req.method !== "POST") {
+        return res.status(405).end()
+    }
+    const { currency, amount } = req.body
+    try {
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount,
+        currency,
+        description: "Order from PaymentIntent API",
+      })
+      return res.status(201).json({
+        client_secret: paymentIntent.client_secret
+      })
+    } catch (e) {
+      res.status(400).json({
+        message: (e as Error).message
+      })
+    }
+}
+```
+
+作成したAPIを実行すると、Payment Intentのclient_secretを取得できます。
+
+```bash
+
+curl http://localhost:3000/api/payment_intents \
+ -XPOST \
+ -H "Content-Type: application/json" \
+ -d '{"amount":500,"currency":"jpy"}'
+
+{
+  "client_secret": "pi_xxxxx_secret_yyyy"
+}
+```
+
+
 ## Step3: Reactで、Payment Intentを使用した決済フローに変更する
+
+作成したPayment Intent APIを利用して、フロントエンドの決済フローを変更しましょう。
+
+まずはAPIの呼び出しと、client_secretをstateに保存する処理を追加します。
+
+```diff
+const Home = () => {
++  const [piClientSecret, setPiClientSecret] = useState('')
++  useEffect(() => {
++    fetch('/api/payment_intents', {
++      method: 'POST',
++      headers: {
++        'Content-Type': 'application/json',
++      },
++      body: JSON.stringify({
++        amount: 500,
++        currency: 'jpy',
++      })
++    }).then(async data => {
++      const response = await data.json()
++      if (data.ok) return response
++      throw response
++    })
++    .then((paymentIntent) => {
++      setPiClientSecret(paymentIntent.client_secret)
++    })
++    .catch(e => window.alert(e.message))
++  },[setPiClientSecret])
+  return (
+    <Elements stripe={stripePromise}>
+-      <PaymentForm />
++      <PaymentForm piClientSecret={piClientSecret} />
+    </Elements>
+  )
+};
+```
+
+`PaymentForm`側で呼び出ししても問題はありません。
+今回または将来的に`<PaymentElement />`を利用する場合に備えて、`<Elements />`の外側に実装することをお勧めします。
+
+続いて`PaymentForm`での決済処理を変更しましょう。
+
+```diff
+-const PaymentForm = () => {
++const PaymentForm = ({piClientSecret}) => {
+  const [cardholderName, setCardholderName] = useState('')
+  const stripe = useStripe()
+  const elements = useElements()
+
+  return (
+    <form onSubmit={async (e) => {
+      e.preventDefault()
+      if (!stripe || !elements) return
+      const cardElement = elements.getElement(CardElement)
+-     if (!cardElement) return
++      if (!cardElement || !piClientSecret) return
++      const result = await stripe.confirmCardPayment(piClientSecret, {
++        payment_method: {
++          card: cardElement,
++          billing_details: {
++            name: cardholderName,
++          }
++        }
++      })
++      if (result.error) {
++        window.alert(result.error.message)
++        return
++      }
++      if (result.paymentIntent) {
++        window.alert(`注文完了 (order_id: ${result.paymentIntent.id})`)
++      } else {
++        window.alert(`注文完了`)
++      }
+-      const { error, token } = await stripe.createToken(cardElement, {name: cardholderName})
+-      if (error) {
+-        window.alert(error.message)
+-        return
+-      }
+-      await fetch('/api/charge', {
+-        method: 'POST',
+-        headers: {
+-          'Content-Type': 'application/json',
+-        },
+-        body: JSON.stringify({
+-          token: token.id,
+-          amount: 500,
+-          currency: 'jpy',
+-        })
+-      }).then(async data => {
+-        const result = await data.json()
+-        if (data.ok) return result
+-        throw result
+-      })
+-      .then((result) => {
+-        window.alert(`注文完了 (order_id: ${result.order_id})`)
+-      })
+-      .catch(e => window.alert(e.message))
+    }}>
+      <fieldset>
+        <legend>カード所有者</legend>
+        <input type="text" value={cardholderName} onChange={e => setCardholderName(e.target.value)}/>
+      </fieldset>
+      <fieldset>
+      <legend>
+        カード番号</legend>
+        <CardElement options={{hidePostalCode: true}}/>
+      </fieldset>
+      <button type="submit">注文する</button>
+    </form>
+  )
+}
+```
+
+client_secretを利用して、Stripe.jsの`confirmCardPayment`を呼び出すだけに変わりました。
+
+submit時の処理のみ変更しましたので、決済フォームの見た目は変わりません。
 ### 3Dセキュア2での認証をテストする
 
 先ほどエラーになったカード番号`4000000000003220`を利用して、3Dセキュア2での認証をテストしてみましょう。
@@ -146,7 +396,7 @@ https://stripe.com/docs/payments/payment-card-element-comparison
 
 ### `<Elements />`にPayment Intentのclient_secretを渡す
 
-まず、Payment Intentのclient_secretを`CardForm`ではなく`Elements`の`options`に渡しましょう。
+まず、Payment Intentのclient_secretを`PaymentForm`ではなく`Elements`の`options`に渡しましょう。
 
 `<PaymentElement />`コンポーネントは、`Elements`にclient_secretがない状態ではエラーが発生します。
 そのため、`client_secret`がない状態ではローディング画面を出すように変更します。
@@ -157,8 +407,8 @@ https://stripe.com/docs/payments/payment-card-element-comparison
   return (
 -    <Elements stripe={stripePromise}>
 +    <Elements stripe={stripePromise} options={{ clientSecret: piClientSecret }}>
--      <CardForm piClientSecret={piClientSecret} />
-+      <CardForm />
+-      <PaymentForm piClientSecret={piClientSecret} />
++      <PaymentForm />
     </Elements>
   )
 ```
@@ -171,8 +421,8 @@ https://stripe.com/docs/payments/payment-card-element-comparison
 -import { CardElement, Elements, useElements, useStripe } from '@stripe/react-stripe-js'
 +import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 
--const CardForm= ({piClientSecret}) => {
-+const CardForm= () => {
+-const PaymentForm= ({piClientSecret}) => {
++const PaymentForm= () => {
   const [cardholderName, setCardholderName] = useState('')
   const stripe = useStripe()
   const elements = useElements()
@@ -213,10 +463,10 @@ https://stripe.com/docs/payments/payment-card-element-comparison
         window.alert(`注文完了`)
       }
     }}>
--      <fieldset>
--        <legend>カード所有者</legend>
--        <input type="text" value={cardholderName} onChange={e => setCardholderName(e.target.value)}/>
--      </fieldset>
+      <fieldset>
+        <legend>カード所有者</legend>
+        <input type="text" value={cardholderName} onChange={e => setCardholderName(e.target.value)}/>
+      </fieldset>
 -      <fieldset>
 -      <legend>
 -        カード番号</legend>
@@ -242,6 +492,96 @@ https://stripe.com/docs/payments/payment-card-element-comparison
 https://qiita.com/hideokamoto/items/2e5619f73cd829f48a24
 
 
+### [Tips]: `getServerSideProps`を使ってPayment Intentを生成する
+
+Payment Intentの生成は、Next.jsのAPIを使わずに行うことも可能です。
+
+その場合、`getServerSideProps`にてStripe SDKを利用します。
+
+```jsx
+import { useState } from 'react'
+import { PaymentElement, Elements, useElements, useStripe } from '@stripe/react-stripe-js'
+import { loadStripe } from '@stripe/stripe-js'
+import { Stripe } from 'stripe'
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_API_KEY)
+
+export default function Cart(props) {
+    return (
+        <Elements stripe={stripePromise} options={{
+            clientSecret: props.client_secret
+        }}>
+          <PaymentForm />
+        </Elements>
+    )
+}
+
+const PaymentForm = () => {
+  const [cardholderName, setCardholderName] = useState('')
+  const stripe = useStripe()
+  const elements = useElements()
+  return (
+    <form onSubmit={async (e) => {
+      e.preventDefault()
+      if (!stripe || !elements) return
+      const result = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: 'http://localhost:4200',
+          payment_method_data: {
+            billing_details: {
+              name: cardholderName,
+            }
+          }
+        },
+        redirect: 'if_required',
+      })
+      if (result.error) {
+        window.alert(result.error.message)
+        return
+      }
+      if (result.paymentIntent) {
+        window.alert(`注文完了 (order_id: ${result.paymentIntent.id})`)
+      } else {
+        window.alert(`注文完了`)
+      }
+    }}>
+      <fieldset>
+        <legend>カード所有者</legend>
+        <input type="text" value={cardholderName} onChange={e => setCardholderName(e.target.value)}/>
+      </fieldset>
+      <PaymentElement />
+      <button type="submit">注文する</button>
+    </form>
+  )
+}
+
+export const getServerSideProps = async ({req, res}) => {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_API_KEY)
+    const {
+        amount = 500,
+        currency = 'jpy'
+    } = req.cookies
+    try {
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Number(amount),
+        currency,
+        description: "Order from PaymentIntent API",
+      })
+      return {
+        props: {
+            client_secret: paymentIntent.client_secret
+        }
+      }
+    } catch (e) {
+      throw e
+    }
+}
+
+```
+
+この場合、合計金額などについてはCookieやデータベースの値を利用して変更できるようにします。
+
 ## Step6: Expressで、決済完了イベントを取得するWebhook APIを追加する
 
 `<PaymentElement />`を利用し、クレジットカード以外の決済手段をサポートすると、「その場で支払いが完了していないケース」が発生します。
@@ -265,7 +605,7 @@ $ stripe listen --forward-to http://localhost:3333/api/webhook
 
 `whsec_`から始まるキーが発行されますので、`.env`の`STRIPE_WEBHOOK_SECRET=`に保存しましょう。
 
-環境変数を読み込み直すため、`npm start`や`yarn nx run-many --taret=serve --all`(Nxの場合)を再起動させる必要があります。
+環境変数を読み込み直すため、`npm run dev`や`next dev`を再起動させる必要があります。
 
 ### Webhook APIを実装する
 
@@ -275,11 +615,62 @@ $ stripe listen --forward-to http://localhost:3333/api/webhook
 
 https://stripe.com/docs/webhooks/quickstart
 
+事前に、`npm install micro`または`yarn add micro`コマンドを実行しましょう。
+
 ```ts
+import Stripe from 'stripe'
+import { buffer } from 'micro'
 
+const endpointSecret = 'whsec_xxxxxx'
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+
+export const config = {
+    api: {
+        bodyParser: false
+    }
+}
+
+export default async function handler(
+  request,
+  response
+) {
+  const sig = request.headers['stripe-signature'];
+  const buf = await buffer(request)
+
+  let event;
+  try {
+    if (!sig) throw new Error("No signature provided")
+    event = stripe.webhooks.constructEvent(buf, sig, endpointSecret);
+  } catch (e) {
+    const err = e instanceof Error ? e : new Error("Bad Request")
+    console.log(err)
+    response.status(400).send(`Webhook Error: ${err.message}`);
+    return;
+  }
+
+  // Handle the event
+  switch (event.type) {
+    case 'payment_intent.succeeded': {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
+      // Then define and call a method to handle the successful payment intent.
+      // handlePaymentIntentSucceeded(paymentIntent);
+      break;
+    }
+    case 'payment_method.attached': {
+      const paymentMethod = event.data.object as Stripe.PaymentMethod;
+      console.log(`PaymentMethod: ${JSON.stringify(paymentMethod, null, 2)}`);
+      // Then define and call a method to handle the successful attachment of a PaymentMethod.
+      // handlePaymentMethodAttached(paymentMethod);
+      break;
+    }
+    default:
+      // Unexpected event type
+      console.log(`Unhandled event type ${event.type}.`);
+  }
+  return response.status(200).end()
+}
 ```
-
-
 
 APIの実装に成功していれば、決済完了時に`PaymentIntent for 500 was successful!`と表示されます。
 
@@ -289,3 +680,10 @@ APIの実装に成功していれば、決済完了時に`PaymentIntent for 500 
 
 そのためこのイベントを起点に処理を実行することで、複数の決済手段をサポートしつつ、バックオフィス系のシステムを効率化できます。
 
+### 注意: `config`の設定を忘れずに
+
+Stripe SDKを利用した署名チェックでは、rawデータを利用します。
+
+しかしNext.jsがデフォルトで適用するパーサーでは、署名チェックに失敗します。
+
+そのため、`export const config`で`bodyParser`の利用を停止させましょう。
