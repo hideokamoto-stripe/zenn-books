@@ -1,5 +1,5 @@
 ---
-title: "Next.jsでの、Payment Intent切り替えガイド"
+title: "Next.jsでの、Payment Intents切り替えガイド"
 ---
 
 この章では、Next.jsを利用した構成での、マイグレーション方法を紹介します。
@@ -165,11 +165,11 @@ https://stripe.com/docs/changelog
 
 https://stripe.com/docs/upgrades#api-%E3%83%90%E3%83%BC%E3%82%B8%E3%83%A7%E3%83%B3
 
-## Step2: Payment Intentを作成するAPIを追加する
+## Step2: Payment Intentsを作成するAPIを追加する
 
-続いて、Payment Intentでの決済フローを実装しましょう。
+続いて、Payment Intentsでの決済フローを実装しましょう。
 
-Payment Intentの場合は、事前にStripe APIを呼び出します。
+Payment Intentsの場合は、事前にStripe APIを呼び出します。
 
 `pages/api/payment_intents.js`ファイルを作成して、以下のコードを追加しましょう。
 
@@ -186,7 +186,7 @@ export default async function handler(req, res) {
       const paymentIntent = await stripe.paymentIntents.create({
         amount,
         currency,
-        description: "Order from PaymentIntent API",
+        description: "Order from PaymentIntents API",
       })
       return res.status(201).json({
         client_secret: paymentIntent.client_secret
@@ -199,7 +199,7 @@ export default async function handler(req, res) {
 }
 ```
 
-作成したAPIを実行すると、Payment Intentのclient_secretを取得できます。
+作成したAPIを実行すると、Payment Intentsのclient_secretを取得できます。
 
 ```bash
 
@@ -214,9 +214,9 @@ curl http://localhost:3000/api/payment_intents \
 ```
 
 
-## Step3: Reactで、Payment Intentを使用した決済フローに変更する
+## Step3: Reactで、Payment Intentsを使用した決済フローに変更する
 
-作成したPayment Intent APIを利用して、フロントエンドの決済フローを変更しましょう。
+作成したPayment Intents APIを利用して、フロントエンドの決済フローを変更しましょう。
 
 まずはAPIの呼び出しと、client_secretをstateに保存する処理を追加します。
 
@@ -394,9 +394,9 @@ https://stripe.com/docs/payments/payment-card-element-comparison
 
 `CardElement`から`PaymentElement`への切り替えは、原則フロントエンド側の変更のみです。
 
-### `<Elements />`にPayment Intentのclient_secretを渡す
+### `<Elements />`にPayment Intentsのclient_secretを渡す
 
-まず、Payment Intentのclient_secretを`PaymentForm`ではなく`Elements`の`options`に渡しましょう。
+まず、Payment Intentsのclient_secretを`PaymentForm`ではなく`Elements`の`options`に渡しましょう。
 
 `<PaymentElement />`コンポーネントは、`Elements`にclient_secretがない状態ではエラーが発生します。
 そのため、`client_secret`がない状態ではローディング画面を出すように変更します。
@@ -487,14 +487,14 @@ https://stripe.com/docs/payments/payment-card-element-comparison
 
 銀行振込での決済を受け付けるには、API側の変更が追加で必要です。
 
-以下の記事を参考に、API側のPayment Intent作成処理を更新しましょう。
+以下の記事を参考に、API側のPayment Intents作成処理を更新しましょう。
 
 https://qiita.com/hideokamoto/items/2e5619f73cd829f48a24
 
 
-### [Tips]: `getServerSideProps`を使ってPayment Intentを生成する
+### [Tips]: `getServerSideProps`を使ってPayment Intentsを生成する
 
-Payment Intentの生成は、Next.jsのAPIを使わずに行うことも可能です。
+Payment Intentsの生成は、Next.jsのAPIを使わずに行うことも可能です。
 
 その場合、`getServerSideProps`にてStripe SDKを利用します。
 
@@ -566,7 +566,7 @@ export const getServerSideProps = async ({req, res}) => {
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Number(amount),
         currency,
-        description: "Order from PaymentIntent API",
+        description: "Order from PaymentIntents API",
       })
       return {
         props: {
@@ -709,7 +709,7 @@ await stripe.charges.create({
   })
 ```
 
-Payment Intentの場合は、`payment_method_options`から設定します。
+Payment Intentsの場合は、`payment_method_options`から設定します。
 
 ```js
 await stripe.paymentIntents.create({
@@ -745,7 +745,7 @@ const charge = await stripe.charges.create({
 await stripe.charges.capture(charge.id)
 ```
 
-Payment Intentの場合は、`capture_method`を設定しましょう。
+Payment Intentsの場合は、`capture_method`を設定しましょう。
 
 ```js
 const paymentIntent = await stripe.paymentIntents.create({
@@ -761,13 +761,13 @@ await stripe.paymentIntents.capture(paymentIntent.id)
 
 https://stripe.com/docs/payments/place-a-hold-on-a-payment-method
 
-### PaymentIntentで、注文金額を変更する場合
+### PaymentIntentsで、注文金額を変更する場合
 
-Payment Intentでは、フォームの入力前に決済金額や通貨を指定します。
+Payment Intentsでは、フォームの入力前に決済金額や通貨を指定します。
 
-そのため、カートページでクーポンの適用や商品数を変更できるシステムでは、Payment Intentを更新する必要があります。
+そのため、カートページでクーポンの適用や商品数を変更できるシステムでは、Payment Intentsを更新する必要があります。
 
-Payment Intentの金額を変更する場合は、サーバー側でUpdate APIを実行しましょう。
+Payment Intentsの金額を変更する場合は、サーバー側でUpdate APIを実行しましょう。
 
 ```js
 await stripe.paymentIntents.update('pi_xxx', {
@@ -778,7 +778,7 @@ await stripe.paymentIntents.update('pi_xxx', {
 });
 ```
 
-この処理を実行する場合、Payment Intentを作成するAPIは**Payment IntentのID**もレスポンスに追加する必要があります。
+この処理を実行する場合、Payment Intentsを作成するAPIは**Payment IntentsのID**もレスポンスに追加する必要があります。
 
 ```diff
     return res.status(201).json({
