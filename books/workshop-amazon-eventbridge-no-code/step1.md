@@ -104,7 +104,7 @@ title: "Step1: AWS Step Functionsで、WordPressサーバーを起動しよう"
     "CreateStack": {
       "Type": "Task",
       "Parameters": {
-        "StackName.$": "States.Format('LAMP-{}', $.name)",
+        "StackName.$": "States.Format('LAMP-{}', $.detail.created)",
         "TemplateURL": "https://s3-external-1.amazonaws.com/cloudformation-templates-us-east-1/WordPress_Single_Instance.template",
         "Parameters": [
           {
@@ -280,6 +280,7 @@ JSON入力欄に、以下のコードを上書き入力します。
                 "ec2:RunInstances",
                 "ec2:StopInstances",
                 "ec2:DescribeSecurityGroups",
+                "s3:PutObject",
                 "cloudformation:DescribeStackResource",
                 "cloudformation:DescribeStackEvents",
                 "cloudformation:UpdateStack",
@@ -322,7 +323,9 @@ Step Functionsのステートマシン画面に戻ります。
 
 ```json
 {
-    "name": "helloWP"
+    "detail":{
+      "created": "helloWP"
+    }
 }
 ```
 

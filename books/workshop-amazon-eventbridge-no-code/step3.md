@@ -1,21 +1,50 @@
 ---
-title: "Stripe Customer Portalで、解約画面を用意しよう"
+title: "Stripeのデータを、分析用にS3へ保存しよう"
 ---
 
-ホスティングサービスには、申し込みだけでなく解約時のサーバー削除フローも必要です。
+SaaSの運用や改善・アップデートには、サブスクリプションの契約情報などのデータ分析が必要になります。
 
-StripeのサブスクリプションとCloudFormationを連携させた後、Step Functionsで解約フローを用意しましょう。
+ここでは、サブスクリプション申し込み時のデータをS3に保存し、QuickSightやAthenaで分析する準備を行います。
 
-## Step1: AWS LambdaでStripeのサブスクリプション情報を更新する関数を用意しよう
+## Step1: 分析用データを保存するS3バケットを作成しよう
 
-## Step2: サーバー作成のStep Functionsステートマシンに、サブスクリプション更新Lambdaを追加しよう
+TBD
+## Step2: Step　Functionsのステートマシンを編集し、S3にデータを保存しよう
 
-## Step3: サーバー作成のステートマシンをもとに、解約フローのステートマシンを作成しよう
+TBD
+## Step3: Step Functionsを実際に動作させて、データを保存してみよう
 
-## Step4: Stripe Customer Portalで、サブスクリプション解約を有効化しよう
+TBD
+## Step4: QuickSightで分析してみよう
 
-## Step5: Stripe Webhookで、サブスクリプション解約イベントもAmazon EventBridgeに送信しよう
-
-## Step6: Amazon EventBridgeで、サブスクリプション解約のワークフローを設定しよう
+※このステップは、当日AWS亀田さんによる解説を行います
 
 
+```json
+{
+    "fileLocations": [
+        {
+            "URIPrefixes": [
+                "https://s3.amazonaws.com/{BUCKET_NAME}/"
+            ]
+        }
+    ],
+    "globalUploadSettings": {
+        "format": "JSON"
+    }
+}
+```
+
+## おさらい
+
+- Step Functionsを利用して、StripeのイベントデータをS3へ保存できる
+- AWSではS3にJSON, CSVデータを保存することでデータ分析ができる
+- QuickSightで、データ分析・可視化に挑戦しよう
+
+## [Advanced] 実運用を目指すための、チャレンジ項目
+
+実際の分析シーンでは、さまざまなデータが必要となります。
+Stripe WebhookとAmazon EventBridgeの設定をカスタマイズして、以下のデータに分析に挑戦してみましょう。
+
+- 決済データ（payment_intent）
+- 解約データ (customer.subscription.canceled)
