@@ -2,7 +2,17 @@
 title: "なぜCharge / Token / Source APIからPayment Intentsに切り替えるのか"
 ---
 
-ここでは、Payment Intents / Setup Intentsへの切り替えを行うメリットを一部紹介します。
+まず、Charge / Token / Source APIからPayment Intents / Setup Intentsに切り替える必要性について簡単に紹介します。
+
+## 非推奨APIで、機能が限られている
+
+最大の理由は、「すでに非推奨で、新しいAPI(Payment Intents / Setup Intents)の利用を推奨している」からです。
+
+決済手段の多様化や不正利用対策の変化・各国の法律や規制の変化など、さまざまな要因で新しいAPIの提供を開始しました。
+
+現在も非推奨APIを使い続けることは可能ですが、機能や決済手段の追加については、新しいAPIのみの提供となります。
+
+https://stripe.com/docs/payments/older-apis
 
 ## 複数の決済方法や追加の認証をサポートできる
 
