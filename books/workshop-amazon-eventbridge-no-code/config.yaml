@@ -1,9 +1,9 @@
-title: "Amazon EventBridgeとStripeで、ローコードに有料サーバー起動・解約システムを作るワークショップ"
+title: "Amazon EventBridgeとStripeで、ノーコードに有料サーバー起動システムを作るワークショップ"
 summary: 
   このワークショップ資料は、JP_Stripesで開催された「AWSでサーバーレスなSaaSバックエンド開発ワークショップ」の後編資料です。
   
-  ここでは、AWS Step FunctionsとAWS CloudFormationを利用したWordPressサーバーの起動・終了システムを構築します。
-  その後、Amazon EventBridgeと連携させ、Stripeのサブスクリプション申し込み、解約と連動してサーバーが起動・終了するようにします。
+  ここでは、AWS Step FunctionsとAWS CloudFormationを利用したWordPressサーバーの起動システムを構築します。
+  その後、Amazon EventBridgeと連携させ、Stripeのサブスクリプション申し込みと連動してサーバーが起動するようにします。
   AWSマネージメントコンソールとStripe Dashboardのみで完結する、ローコードなワークショップ資料です。
 topics: []
 published: false
