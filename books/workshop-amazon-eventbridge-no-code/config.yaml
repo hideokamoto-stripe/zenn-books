@@ -1,0 +1,17 @@
+title: "Amazon EventBridgeとStripeで、ノーコードに有料サーバー起動システムを作るワークショップ"
+summary: 
+  このワークショップ資料は、JP_Stripesで開催された「AWSでサーバーレスなSaaSバックエンド開発ワークショップ」の後編資料です。
+  
+  ここでは、AWS Step FunctionsとAWS CloudFormationを利用したWordPressサーバーの起動システムを構築します。
+  その後、Amazon EventBridgeと連携させ、Stripeのサブスクリプション申し込みと連動してサーバーが起動するようにします。
+  AWSマネージメントコンソールとStripe Dashboardのみで完結する、ローコードなワークショップ資料です。
+topics: []
+published: false
+price: 0 # 有料の場合200〜5000
+# 本に含めるチャプターを順番に並べましょう
+chapters:
+  - step0
+  - step1
+  - step2
+  - step3
+  - stepx-tmp
