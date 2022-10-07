@@ -4,7 +4,7 @@ title: "追加の学習リソース"
 
 PaymentElementの見た目をカスタマイズする方法や、領収書の送信方法・日本語でのカード利用明細表記など、さまざまなリンクを用意しました。
 
-Payment Intentへの切り替えを機に、Stripe.jsやStripe APIをより使いこなすことに挑戦してみましょう。
+Payment Intentsへの切り替えを機に、Stripe.jsやStripe APIをより使いこなすことに挑戦してみましょう。
 
 https://stripe.com/docs/elements/appearance-api
 

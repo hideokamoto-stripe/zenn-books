@@ -1,14 +1,15 @@
-title: "Stripe APIマイグレーションガイド (Charge/Token API -> Payment Intent編)"
+title: "Stripe APIマイグレーションガイド (Charge/Token API -> Payment Intents編)"
 summary: 
   Stripeでは、決済方法の増加や法的な要件の追加といった周りの状況の変化に応じて、大きくAPIを変更することがあります。
   その場合、より多くの決済方法や機能・オプションを利用するためには、実装の変更が必要です。
 
-  このガイドでは、言語・FW別に、Charge APIやToken APIから、Payment Intentを利用した決済フローへ変更する方法を紹介します。
+  このガイドでは、言語・FW別に、Charge APIやToken APIから、Payment Intentsを利用した決済フローへ変更する方法を紹介します。
 topics: ['stripe']
 published: false
 price: 0 # 有料の場合200〜5000
 # 本に含めるチャプターを順番に並べましょう
 chapters:
+  - reason
   - compare
   - react-spa-with-express
   - nextjs
