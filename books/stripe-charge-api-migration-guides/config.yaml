@@ -5,7 +5,7 @@ summary:
 
   このガイドでは、言語・FW別に、Charge APIやToken APIから、Payment Intentsを利用した決済フローへ変更する方法を紹介します。
 topics: ['stripe']
-published: false
+published: true
 price: 0 # 有料の場合200〜5000
 # 本に含めるチャプターを順番に並べましょう
 chapters:

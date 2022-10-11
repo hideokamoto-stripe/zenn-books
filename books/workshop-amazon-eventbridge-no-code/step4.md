@@ -6,16 +6,42 @@ title: "Stripe Customer Portalで、解約画面を用意しよう"
 
 StripeのサブスクリプションとCloudFormationを連携させた後、Step Functionsで解約フローを用意しましょう。
 
-## Step1: AWS LambdaでStripeのサブスクリプション情報を更新する関数を用意しよう
+## サーバー情報とサブスクリプション情報の管理方法について
 
-## Step2: サーバー作成のStep Functionsステートマシンに、サブスクリプション更新Lambdaを追加しよう
+解約時の操作を自動化するには、CloudFormationで立ち上げたサーバーの情報と、Stripeが持つサブスクリプション情報を紐づける必要があります。
 
-## Step3: サーバー作成のステートマシンをもとに、解約フローのステートマシンを作成しよう
+紐付け方にはさまざまな方法がありますが、今回はローコードで実現できるDynamoDBを利用した方法で進めます。
 
-## Step4: Stripe Customer Portalで、サブスクリプション解約を有効化しよう
+## Step1: DynamoDBとStep Functionsを利用して、サーバー情報とサブスクリプション情報を紐付けよう
 
-## Step5: Stripe Webhookで、サブスクリプション解約イベントもAmazon EventBridgeに送信しよう
+### 1-1: DynamoDBでテーブルを作成しよう
 
-## Step6: Amazon EventBridgeで、サブスクリプション解約のワークフローを設定しよう
+### 1-2: IAMロールを更新し、DynamoDBでの操作に対応する
+
+### 1-3: サーバー作成のStep Functionsステートマシンに、DynamoDBのPutItem操作を追加する
 
 
+## Step2: 解約ワークフローを実行する、Step Functionsステートマシンを作成しよう
+
+
+## Step3: Stripe Webhookからの解約イベントを、Amazon EventBridgeで受け付けよう
+
+### 3-1: Webhookイベントの設定っを更新する
+
+### 3-2: EventBridgeで、解約処理のルールを作成する
+
+### 3-3: Stripeのカスタマーポータルで、解約操作を許可する
+
+## おさらい
+
+- DynamoDBなどのマネージド型DBを利用して、契約内容とシステムデータを連携できる
+- StripeのCustomer Portalを利用して、サブスクリプションの管理や解約ができる
+- イベントやタスクごとにStep Functionsのステートマシンを作成して、ローコードな開発とフローの可視化ができる
+
+## [Advanced] 実運用を目指すための、チャレンジ項目
+
+実運用では、サーバーを停止・削除する必要のあるイベントが少なくとももう１つ存在します。
+それは、顧客が利用料金の支払いを行わなかったケースです。
+
+Stripeでは、InvoiceまたはSubscriptionのイベントを利用して、未払いのサブスクリプションに対して処理を行えます。
+今回のステートマシンを参考に、「未払いの顧客については、CloudFormationを自動削除する」ワークフローを構築してみましょう。
