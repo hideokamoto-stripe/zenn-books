@@ -5,8 +5,8 @@ summary:
   ここでは、AWS Step FunctionsとAWS CloudFormationを利用したWordPressサーバーの起動システムを構築します。
   その後、Amazon EventBridgeと連携させ、Stripeのサブスクリプション申し込みと連動してサーバーが起動するようにします。
   AWSマネージメントコンソールとStripe Dashboardのみで完結する、ローコードなワークショップ資料です。
-topics: []
-published: false
+topics: ['stripe', 'aws']
+published: true
 price: 0 # 有料の場合200〜5000
 # 本に含めるチャプターを順番に並べましょう
 chapters:
@@ -14,4 +14,5 @@ chapters:
   - step1
   - step2
   - step3
+  - step4
   - stepx-tmp

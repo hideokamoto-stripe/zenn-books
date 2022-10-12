@@ -271,6 +271,9 @@ JSON入力欄に、以下のコードを上書き入力します。
             "Effect": "Allow",
             "Action": [
                 "lambda:InvokeFunction",
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
                 "ec2:AuthorizeSecurityGroupIngress",
                 "ec2:DescribeInstances",
                 "ec2:StartInstances",
