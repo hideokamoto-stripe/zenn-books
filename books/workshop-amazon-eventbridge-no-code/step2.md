@@ -1,5 +1,5 @@
 ---
-title: "Stripe Payment Linksで、サーバー申し込みフォームを用意しよう"
+title: "Step2: Stripe Payment Linksで、サーバー申し込みフォームを用意しよう"
 ---
 
 CloudFormation経由でサーバーを起動するワークフローが用意できました。

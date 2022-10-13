@@ -1,64 +1,49 @@
 ---
-title: "Stripe Customer Portalで、解約画面を用意しよう"
+title: "Step4: Stripeのデータを、分析用にS3へ保存しよう"
 ---
 
-ホスティングサービスには、申し込みだけでなく解約時のサーバー削除フローも必要です。
+SaaSの運用や改善・アップデートには、サブスクリプションの契約情報などのデータ分析が必要になります。
 
-StripeのサブスクリプションとCloudFormationを連携させた後、Step Functionsで解約フローを用意しましょう。
+ここでは、サブスクリプション申し込み時のデータをS3に保存し、QuickSightやAthenaで分析する準備を行います。
 
-## サーバー情報とサブスクリプション情報の管理方法について
+## Step1: 分析用データを保存するS3バケットを作成しよう
 
-解約時の操作を自動化するには、CloudFormationで立ち上げたサーバーの情報と、Stripeが持つサブスクリプション情報を紐づける必要があります。
+まずはStripeのデータを保存するための、S3バケットを用意しましょう。
 
-紐付け方にはさまざまな方法がありますが、今回はローコードで実現できるDynamoDBを利用した方法で進めます。
+マネージメントコンソール上部の検索フォームに[s3]と入力しましょう。
 
-## Step1: DynamoDBとStep Functionsを利用して、サーバー情報とサブスクリプション情報を紐付けよう
+検索結果、[S3]がでてきますので、クリックします。
 
-DynamoDBへのアクセスは、引き続きStep Functionsを利用します。
-### 1-1: DynamoDBでテーブルを作成しよう
+![](https://storage.googleapis.com/zenn-user-upload/c9106d85a180-20221007.png)
 
-マネージメントコンソール上部の検索フォームに[dynamodb]と入力しましょう。
+続いて、バケットを作成します。
 
-検索結果、[DynamoDB]がでてきますので、クリックします。
+[バケット]の右側にある[バケットを作成]をクリックしましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/0da0600e3387-20221012.png)
+![](https://storage.googleapis.com/zenn-user-upload/c7640c60444f-20221007.png)
 
-DynamoDB管理画面に移動しました。左側メニューから[テーブル]を選択しましょう。
+今回は、デフォルト設定のままバケットを作成します。
 
-![](https://storage.googleapis.com/zenn-user-upload/ac0629ddd6d5-20221012.png)
-[テーブル]右側にある[テーブルの作成]をクリックします。
+![](https://storage.googleapis.com/zenn-user-upload/b7aae584ed78-20221007.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/d6f48e7949c2-20221012.png)
+[バケット名]に[{英語で名前}-stripe-workshop-{今日の日付}]と入力しましょう。（例: `hidetaka-stripe-workshop-20221014`）
 
-テーブルを作成するには、[名前]と[パーテーションキー]の２つが必須です。
+S3のバケット名は、ドメインなどと同様重複することができませんので、ご注意ください。
 
-![](https://storage.googleapis.com/zenn-user-upload/16e52360dee8-20221012.png)
+![](https://storage.googleapis.com/zenn-user-upload/f374ac065f07-20221007.png)
 
-ここでは、以下のように入力しましょう。
+ページをスクロールして、[バケットを作成]ボタンをクリックします。
 
-- 名前: StripeWSContract
-- パーテーションキー: subscription_id (文字列)
+下の画像のように、[作成に成功した]メッセージが表示されれば完了です。
 
-![](https://storage.googleapis.com/zenn-user-upload/43e3cb9d7de0-20221012.png)
+![](https://storage.googleapis.com/zenn-user-upload/dc94eb7015ea-20221007.png)
+## Step2: Step　Functionsのステートマシンを編集し、S3にデータを保存しよう
 
-テーブルの設定は、[デフォルト設定]で進めます。
+続いて、作成したS3バケットにデータを投入するフローを追加します。
 
-![](https://storage.googleapis.com/zenn-user-upload/84e4b98326a0-20221012.png)
+### 2-1: Step FunctionsのWorkflow Studioを開く
 
-最後にページ下部の[テーブルの作成]をクリックしましょう。
-
-作成が完了するまで、少し時間がかかることがあります。
-
-![](https://storage.googleapis.com/zenn-user-upload/2a547a426202-20221012.png)
-
-[正常に作成されました]のメッセージ表示が出るか、状態が[アクティブ]になっていれば、作成完了です。
-
-![](https://storage.googleapis.com/zenn-user-upload/ac3e1c889519-20221012.png)
-### 1-2: サーバー作成のStep Functionsステートマシンに、DynamoDBのPutItem操作を追加する
-
-続いてステートマシンから、DynamoDBにデータを保存してみましょう。
-
-Step1で作成した、Step Functionsのステートマシンを開きます。
+Step1で作成した、Step Functionsのステートマシンを開きましょう。
 
 ![](https://storage.googleapis.com/zenn-user-upload/b81d681e7aa7-20221007.png)
 
@@ -70,339 +55,201 @@ Step1で作成した、Step Functionsのステートマシンを開きます。
 
 クリックすると、GUIでワークフローを編集できる画面が立ち上がります。
 
-左側にある検索フォームに、[dynamodb putitem]と入力しましょう。
+### 2-2: S3にオブジェクトを追加するステップを追加
 
-![](https://storage.googleapis.com/zenn-user-upload/7053c30f8026-20221012.png)
+エディタを開けたので、新しいタスク（S3にデータを保存）を登録しましょう。
 
-[PutItem]のカードを、ドラッグ＆ドロップで[DescribeStack]の前におきましょう。
+左側にある検索フォームに、[putobject]と入力します。
 
-![](https://storage.googleapis.com/zenn-user-upload/13528f249e43-20221012.png)
+![](https://storage.googleapis.com/zenn-user-upload/0756a8043fff-20221007.png)
 
-#### [設定]で入力値をを指定する
 
-DBに保存するデータの内容は、右側の[設定]タブから指定できます。
+[PutObject]のカードをドラッグ&ドロップで、[CreateStack]の前におきましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/1a70e36c9138-20221012.png)
+![](https://storage.googleapis.com/zenn-user-upload/f7ca672763e2-20221007.png)
 
-[統合タイプ]は[Optimized]のままにしましょう。
+これでワークフローの追加が完了しました。
 
-[APIパラメータ]には、以下のJSONを入力します。
+### 2-3: 入力データと出力データを編集しよう
+
+S3に出力するデータの内容やファイル名の設定を行いましょう。
+
+ワークフロー内の[PutObject]をクリックすると、右側に設定画面が表示されます。
+
+![](https://storage.googleapis.com/zenn-user-upload/f0829ce268a2-20221007.png)
+
+[設定]タブの、[API]パラメータに以下のJSONを入力しましょう。
 
 ```json
 {
-  "TableName": "StripeWSContract",
-  "Item": {
-    "subscription_id": {
-      "S.$": "$.detail.data.object.id"
-    },
-    "stack_name": {
-      "S.$": "$.stack.name"
-    }
-  }
+        "Body.$": "$.detail.data.object",
+        "ContentType": "application/json",
+        "Bucket": "{先ほど作成したS3バケットの名前}",
+        "Key.$": "$.id"
 }
 ```
 
-#### [出力]で次のステップにわたす値を指定する
+![](https://storage.googleapis.com/zenn-user-upload/3b98578c6209-20221007.png)
 
-続いて[出力]タブを選びます。
+続いて、[出力]タブをクリックします。
 
-今回は、「PutItemの結果」は次のステップで必要としません。
+![](https://storage.googleapis.com/zenn-user-upload/4837d9d63aac-20221007.png)
 
-そのため、[ResultPathを使用して元の入力を出力に追加]をオンにし、[Discard result and keep original input]を選択しましょう。
+ここでは、次のステップに送るデータ内容を設定できます。
 
-![](https://storage.googleapis.com/zenn-user-upload/ccb245847f31-20221012.png)
+今回は、「PutObjectの結果」ではなく、「Start時の値」が次のステップに必要です。
+
+そのため、[ResultPathを使用して元の入力を出力に追加]をオンにしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/6bf2fa3a48ea-20221007.png)
+
+どのようにデータを追加するかの設定画面が表示されます。
+
+[Discard result and keep original input]を選択しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/c397cd13c2e9-20221007.png)
 
 変更が完了しましたので、画面右上の[適用して終了]をクリックしましょう。
 
 ![](https://storage.googleapis.com/zenn-user-upload/4fbf4c2941b3-20221007.png)
 
-[定義]のJSONやワークフロー図に[PutItem]が追加されました。
+[定義]のJSONやワークフロー図に[PutObject]が追加されました。
 
 まだステートマシンの変更が保存されていませんので、画面右上の[保存]ボタンをクリックして保存しましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/2a71e35182ec-20221012.png)
+![](https://storage.googleapis.com/zenn-user-upload/e23df4830fe0-20221007.png)
 
-接続に成功していれば、Stripe Payment Links経由でのサブスクリプション申し込みで、DynamoDBにアイテムが保存されます。
+## Step3: Step Functionsを実際に動作させて、データを保存してみよう
 
-![](https://storage.googleapis.com/zenn-user-upload/af7a3b9cea8a-20221012.png)
+実際にデータが保存されたかを試してみましょう。
 
-データは、テーブル[StripeWSContract]を開き、[テーブルアイテムの探索]をクリックすると確認できます。
+Stripeで作成した支払いリンクから、サブスクリプションを申し込みします。
 
-![](https://storage.googleapis.com/zenn-user-upload/bd58fe720768-20221012.png)
+![](https://storage.googleapis.com/zenn-user-upload/2fac4f6334cf-20221005.png)
 
-## Step2: 解約ワークフローを実行する、Step Functionsステートマシンを作成しよう
+申し込み完了後、数秒〜1分程度でS3バケット内にJSONファイルが追加されます。
 
-解約時に参照するデータベースの用意ができました。
+![](https://storage.googleapis.com/zenn-user-upload/afd9c416798d-20221007.png)
 
-次は、このデータを利用してCloudFormationスタックを削除するステートマシンを追加しましょう。
+このように、Stripe Webhook / Amazon EventBridge / AWS StepFunctionsを組み合わせることで、コードを書かずにStripe内のイベントデータをAWS上で分析する下準備ができます。
 
-Step1の手順と同様に、[ステートマシンの作成]ページを開きましょう。
+## Step4: QuickSightで分析してみよう
 
-![](https://storage.googleapis.com/zenn-user-upload/1e777ffb399f-20221012.png)
+データをS3に投入しましたので、QuickSight可視化しましょう。
+### 4-1: QuickSightをセットアップする
 
-今回も、[コードでワークフローを記述]を選択します。
+QuickSightのセットアップを行いましょう。
 
-定義のJSONファイルは、以下をコピーアンドペーストしましょう。
+上部の検索フォームで、[Quicksight]を入力し、[QuickSight]をクリックしましょう。
 
+![](https://storage.googleapis.com/zenn-user-upload/67da89d6576b-20221013.png)
+
+アカウントを作成したことがない場合、作成画面が表示されます。
+すでにある方は、4-2へスキップしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/646cf22ee9ad-20221013.png)
+
+アカウントの種類を選びます。
+ここでは、[standard]を選びましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/09638a143c2d-20221013.png)
+
+デフォルト設定のまま、進めます。
+
+![](https://storage.googleapis.com/zenn-user-upload/b0786187ef8f-20221013.png)
+
+アカウント名と、メールアドレスを入力しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/25377010c7d9-20221013.png)
+
+データソースにするAWSリソースを選択します。
+
+![](https://storage.googleapis.com/zenn-user-upload/ddf91479354b-20221013.png)
+
+デフォルトではS3が選ばれていませんので、追加しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/fd4c29579994-20221013.png)
+
+バケット名を指定する必要がありますので、先ほど作成したバケットを指定しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/7abe9de4ca5d-20221013.png)
+
+[Finish]を押すと、S3が選択状態に変わります。
+
+![](https://storage.googleapis.com/zenn-user-upload/0dba6394d056-20221013.png)
+
+[Finish]を押して、作成を始めましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/26e97deff410-20221013.png)
+
+作成に成功したら、[Go to Amazon QuickSight]をクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/ae559632cd5c-20221013.png)
+
+### 4-2: S3からデータセットを読み込みしよう
+
+ダッシュボードにアクセスできましたので、S3のデータを「データセット」として読み込みましょう。
+
+画面左側の[データセット]をクリックします。
+
+![](https://storage.googleapis.com/zenn-user-upload/8fcbf2c5d381-20221013.png)
+
+画面右上にある、[新しいデータセット]をクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/d4de6d303a19-20221013.png)
+
+データソースを指定します。ここでは[S3]を選びましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/cf22da480e44-20221013.png)
+
+データソース名と、マニフェストファイルを指定します。
+
+データソース名は、`stripesubscription`など後でわかりやすい名前をつけましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/f9c5362b7800-20221013.png)
+
+マニフェストファイルは、手元で作成する必要があります。
+
+`manifest.json`ファイルを作成し、以下のJSONを入力しましょう。
+　
+**manifest.json**
 ```json
 {
-  "Comment": "A description of my state machine",
-  "StartAt": "DynamoDB GetItem",
-  "States": {
-    "DynamoDB GetItem": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::dynamodb:getItem",
-      "Parameters": {
-        "TableName": "StripeWSContract",
-        "Key": {
-          "subscription_id": {
-            "S.$": "$.detail.data.object.id"
-          }
+    "fileLocations": [
+        {
+            "URIPrefixes": [
+                "https://s3.amazonaws.com/{BUCKET_NAME}/"
+            ]
         }
-      },
-      "Next": "DeleteStack",
-      "ResultSelector": {
-        "subscription_id.$": "$.Item.subscription_id.S",
-        "stack_name.$": "$.Item.stack_name.S"
-      }
-    },
-    "DeleteStack": {
-      "Type": "Task",
-      "Next": "DynamoDB DeleteItem",
-      "Parameters": {
-        "StackName.$": "$.stack_name"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:cloudformation:deleteStack",
-      "ResultPath": null
-    },
-    "DynamoDB DeleteItem": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::dynamodb:deleteItem",
-      "Parameters": {
-        "TableName": "StripeWSContract",
-        "Key": {
-          "subscription_id": {
-            "S.$": "$.subscription_id"
-          }
-        }
-      },
-      "Next": "Success"
-    },
-    "Success": {
-      "Type": "Succeed"
+    ],
+    "globalUploadSettings": {
+        "format": "JSON"
     }
-  }
 }
 ```
 
-これで、次の画像のようなフローのステートマシンが完成します。
+`{BUCKET_NAME}`を、先ほど作成したS3バケット名に設定しましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/cbfe454dc44c-20221012.png)
+[アップロード]を選んで、作成したJSONファイルをアップロードすればOKです。
 
-[次へ]をクリックしましょう。
+![](https://storage.googleapis.com/zenn-user-upload/a09eb8826f5e-20221013.png)
 
-### 新しいステートマシンのロールは、step1のものを再利用
+[接続]をクリックすると、データセット作成完了メッセージが表示されます。
 
-ステートマシンの名前と、ロールを設定しましょう。
-![](https://storage.googleapis.com/zenn-user-upload/eb8f4fcc0a50-20221012.png)
-名前は、`DeleteWPWorkflow`を入力します。
+![](https://storage.googleapis.com/zenn-user-upload/62c6328704e3-20221013.png)
+### 4-3: 取り込みしたデータを可視化しよう
 
-![](https://storage.googleapis.com/zenn-user-upload/b354c0e7f933-20221012.png)
-
-ロールについては、step1で作成したロールを利用します。
-
-![](https://storage.googleapis.com/zenn-user-upload/0d510727e9b1-20221012.png)
-
-ワークフローが失敗した時の調査に備えて、ログは「ERROR」を指定します。
-ロググループを新しく作成できます。ステートマシンの名前を利用できますので、デフォルトのまま使いましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/ef4611b7bf95-20221012.png)
-
-ページをスクロールして、[ステートマシンの作成]をクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/ad194ecb869b-20221004.png)
-
-作成成功のメッセージが表示されれば、完了です。
-
-![](https://storage.googleapis.com/zenn-user-upload/f41132855bd1-20221004.png)
-
-## Step3: Amazon EventBridgeで、Stripe Webhookからの解約イベントを受け付けよう
-
-続いて、作成したワークフローを実行するための、EventBridgeルールを追加します。
-
-ページ上部の検索フォームに`eventbridge`を入力し、EventBridgeをクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/f5952e857871-20221005.png)
-
-EventBridge管理画面では、左側メニューから[ルール]を選択します。
-
-![](https://storage.googleapis.com/zenn-user-upload/13be672e6f8c-20221005.png)
-
-### 3-1: ルールを作成しよう
-
-イベントバスを`default`、ルール名を`stripe-delete-subscription`に設定して、ルールを作成しましょう。
-
-今回は、イベントパターン設定でのサンプルイベント入力を省略します。
-
-[イベントパターン]にて、フィルタリングルールをJSONで定義しましょう。
-![](https://storage.googleapis.com/zenn-user-upload/b89f03e5af3c-20221005.png)
-
-[イベントパターンのフォーム]から選択することも可能ですが、今回は[カスタムパターン（JSONエディタ）]タブを選びましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/95067d4b45d4-20221005.png)
-
-以下のJSONをエディタにコピー＆ペーストしましょう。
-
-```json
-{
-  "source": [{
-    "prefix": "stripe.com"
-  }],
-  "detail-type": ["customer.subscription.deleted"]
-}
-```
-
-[次へ]をクリックして、ターゲットの設定に移ります。
-
-### 3-2: ターゲットにStepFunctionsを指定しよう
-
-続いて、イベントパターンと一致した場合に実行する処理を設定します。
-
-[ターゲットタイプ]を[AWSのサービス]に設定しましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/d9521ecb8937-20221005.png)
-
-検索フォームに[step functions]を入力し、[Step functions ステートマシン]を選択します。
-
-![](https://storage.googleapis.com/zenn-user-upload/d4e613654d44-20221005.png)
-
-ステートマシンを選択する画面が表示されます、先ほど作成したステートマシン`DeleteWPWorkflow`を指定しましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/bf033d882e59-20221005.png)
-
-実行ロールで、[この特定のリソースについて新しいロールを作成]を選択し、[次へ]を選択します。
-
-![](https://storage.googleapis.com/zenn-user-upload/16d6e369e0d4-20221005.png)
-
-タグを設定する画面がありますが、今回は省略し、[次へ]を選びましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/29705e718e54-20221005.png)
-
-最後に設定の確認画面が表示されます。
-設定内容を確認して、[ルールの作成]をクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/a90ce3524e1c-20221005.png)
-
-ルールが作成されました。
-
-![](https://storage.googleapis.com/zenn-user-upload/33d1bcfb2dac-20221005.png)
-
-## Step4: Stripeダッシュボードで、解約ページとイベント送信準備を行う
-
-最後に、Stripeダッシュボード上で解約ページの設定を行います。
-### 4-1: サブスクリプション解約のWebhookを送信対象に追加する
-
-Amazon EventBridgeでイベントを待ち受ける準備ができましたので、実際にイベントを送信しましょう。
-
-Stripe Dashboardにて、[開発者]タブをクリックし、左側のメニューから[Webhook]を選択しましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/f584383f5c0a-20221005.png)
-
-Amazon EventBridgeのクイックスタートが完了していれば、**lambda-url**を含むURLのWebhookがすでに登録されています。
-
-このWebhookをクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/4b9521a3d04e-20221005.png)
-
-詳細ページにて、Stripeから送信するイベント内容を変更できます。
-
-URL右側にある[...]をクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/864b6c12948d-20221005.png)
-
-[詳細情報の更新]をクリックします。
-
-![](https://storage.googleapis.com/zenn-user-upload/f6b912be4e77-20221005.png)
-
-[送信イベント]にて、検索フォームに`customer.subscription.deleted`を入力し、一致するものをクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/5925cb724f21-20221012.png)
-
-`customer.subscription.deleted`が追加された状態で、`エンドポイントを更新`を選択します。
-
-![](https://storage.googleapis.com/zenn-user-upload/3e3ec557b7ba-20221012.png)
-
-これでサブスクリプション解約時に、EventBridgeへイベントが送られるようになりました。
-### 4-2: カスタマーポータルを有効化する
-
-最後に、ユーザーがサブスクリプションを解約するためのページを用意します。
-
-Stripe Dashboard右上の歯車アイコンをクリックし、[製品の設定]ページを開きましょう。
-![](https://storage.googleapis.com/zenn-user-upload/b2723e609446-20221012.png)
-
-[Billing]に[カスタマーポータル]がありますので、クリックします。
-![](https://storage.googleapis.com/zenn-user-upload/a8cc277834b8-20221012.png)
-カスタマーポータルの設定画面が開きました。
-![](https://storage.googleapis.com/zenn-user-upload/5cf773b6db03-20221012.png)
-今回はURLで直接アクセスできるようにしますので、[リンクからカスタマーポータルを起動する]にある、[テスト環境のリンクを有効化]をクリックしましょう。
-![](https://storage.googleapis.com/zenn-user-upload/56084ffe6f66-20221012.png)
-[カスタマーポータルリンク]が表示されればOKです。
-![](https://storage.googleapis.com/zenn-user-upload/02cb8b2d1355-20221012.png)
-### 4-3: カスタマーポータルで、プラン解約をサポートする
-
-続いてカスタマーポータルで、ユーザーができる操作を変更します。
-
-[サブスクリプション]をクリックし、設定項目を開きましょう。
-
-[サブスクリプションをキャンセル]がオンになっていることを確認します。
-![](https://storage.googleapis.com/zenn-user-upload/06db704c355b-20221012.png)
-[設定をキャンセル]にて、[今すぐキャンセル]を選択しましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/e0acfd35dccb-20221012.png)
-
-[請求期間の終了時にキャンセル]を指定した場合、サブスクリプションの解約処理は現在のサイクルが終わってから実行されます。
-実際のビジネスでは利用することもありますが、今回のワークショップでは、解約ワークフローが動作することをその場で確認するため、[今すぐキャンセル]の設定で進みます。
-
-これで設定が完了です。
-## 動作を確認する方法
-
-解約ワークフローを試すには、カスタマーポータルにアクセスします。
-
-![](https://storage.googleapis.com/zenn-user-upload/a0543a02582f-20221012.png)
-
-以下の画像のメッセージが表示される場合があります。
-
-![](https://storage.googleapis.com/zenn-user-upload/cee2038fbd55-20221012.png)
-
-この場合は、Stripe内のCustomerデータを更新し、「ダッシュボードにログイン中のメールアドレス」に変更しましょう。
-![](https://storage.googleapis.com/zenn-user-upload/f4f77bde8c44-20221012.png)
-
-メールアドレスに対して、ログイン用のコードが送られてきます。
-![](https://storage.googleapis.com/zenn-user-upload/2d95c3567468-20221012.png)
-
-このコードを入力すると、マイページにアクセスできます。
-
-
-![](https://storage.googleapis.com/zenn-user-upload/0fd244fd269e-20221012.png)
-
-ここで、「プランをキャンセル」ボタンをクリックすると、サブスクリプションの解約ができます。
-
-![](https://storage.googleapis.com/zenn-user-upload/6f3fe36189b6-20221012.png)
-
-解約後は、StripeからAmazon EventBridgeにイベントが送られ、Step Functionsで解約ワークフローが起動します。
-
+※このステップは、当日AWS亀田さんによる解説を行います
 ## おさらい
 
-ここまでで、ユーザーがサブスクリプションを解約すると、自動的にサーバーが停止するワークフローが出来上がりました。
-
-- DynamoDBなどのマネージド型DBを利用して、契約内容とシステムデータを連携できる
-- StripeのCustomer Portalを利用して、サブスクリプションの管理や解約ができる
-- イベントやタスクごとにStep Functionsのステートマシンを作成して、ローコードな開発とフローの可視化ができる
+- Step Functionsを利用して、StripeのイベントデータをS3へ保存できる
+- AWSではS3にJSON, CSVデータを保存することでデータ分析ができる
+- QuickSightで、データ分析・可視化に挑戦しよう
 
 ## [Advanced] 実運用を目指すための、チャレンジ項目
 
-実運用では、サーバーを停止・削除する必要のあるイベントが少なくとももう１つ存在します。
-それは、顧客が利用料金の支払いを行わなかったケースです。
+実際の分析シーンでは、さまざまなデータが必要となります。
+Stripe WebhookとAmazon EventBridgeの設定をカスタマイズして、以下のデータに分析に挑戦してみましょう。
 
-Stripeでは、InvoiceまたはSubscriptionのイベントを利用して、未払いのサブスクリプションに対して処理を行えます。
-今回のステートマシンを参考に、「未払いの顧客については、CloudFormationを自動削除する」ワークフローを構築してみましょう。
+- 決済データ（payment_intent）
+- 解約データ (customer.subscription.canceled)
