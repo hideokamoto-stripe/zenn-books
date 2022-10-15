@@ -1,5 +1,5 @@
 ---
-title: "Step3: Stripe Customer Portalで、解約画面を用意しよう"
+title: "Chapter3: Stripe Customer Portalで、解約画面を用意しよう"
 ---
 
 ホスティングサービスには、申し込みだけでなく解約時のサーバー削除フローも必要です。

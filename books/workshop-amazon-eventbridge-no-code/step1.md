@@ -1,5 +1,5 @@
 ---
-title: "Step1: AWS Step Functionsで、WordPressサーバーを起動しよう"
+title: "Chapter1: AWS Step Functionsで、WordPressサーバーを起動しよう"
 ---
 
 まずはサービスのコア部分である、「サーバーのセットアップワークフロー」を構築しましょう。
