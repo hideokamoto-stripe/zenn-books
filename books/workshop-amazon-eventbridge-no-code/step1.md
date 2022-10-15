@@ -1,390 +1,279 @@
 ---
-title: "Chapter1: AWS Step Functionsで、WordPressサーバーを起動しよう"
+title: "Chapter1: Amazon EventBridgeクイックスタートで、AWSでStripeのイベントを受信しよう"
 ---
 
-まずはサービスのコア部分である、「サーバーのセットアップワークフロー」を構築しましょう。
+まずは、AWSのクイックスタートを利用して、Stripe内のイベントをAWSで処理するためのイベントバスを作成しましょう。
 
-## AWSマネージメントコンソールにログインしよう
+## Step0: AWS Lambdaの制限状況を確認する
 
-まずはAWSマネージメントコンソールにログインしましょう。
+事前準備として、AWS Lambdaをセットアップできる状況かを確認しましょう。
 
-[https://aws.amazon.com/jp/](https://aws.amazon.com/jp/?nc2=h_lg) から、[コンソールにサインイン]をクリックします。
+マネージメントコンソール上部の検索フォームで、[lambda]と入力します。
 
-![](https://storage.googleapis.com/zenn-user-upload/f29b1b0e8b2f-20221004.png)
+![](https://storage.googleapis.com/zenn-user-upload/6a5ae17becf8-20221015.png)
 
-その後、作成済みのIAMユーザーでログインしましょう。
+[Lambda]を選択すると、AWS Lambdaの管理画面が表示されます。
 
-![](https://storage.googleapis.com/zenn-user-upload/b52a40f52471-20221004.png)
+![](https://storage.googleapis.com/zenn-user-upload/2f3f42d4e2c6-20221015.png)
 
-ログインに成功すれば、マネージメントコンソールのTOPページが表示されます。
+ここで、[予約されていないアカウントの同時実行]の数字を確認してください。
 
-![](https://storage.googleapis.com/zenn-user-upload/c1546982db63-20221004.png)
+![](https://storage.googleapis.com/zenn-user-upload/4fdae2e96b17-20221015.png)
 
-### リージョンは、`us-east-1`
+数字が10またはそれ以下の場合は、[同時実行数の上限]を更新する必要があります。
 
-ワークショップを進める便宜上、リージョンは`米国東部（バージニア北部） us-east-1`を指定しましょう。
+変更方法については、以下のドキュメントまたは、ワークショップのアシスタントに質問して確認してください。
 
-右上に「バージニア北部」と表示されていない場合、クリックして変更します。
+https://docs.aws.amazon.com/ja_jp/lambda/latest/dg/provisioned-concurrency.html#configuring-provisioned-concurrency
 
-![](https://storage.googleapis.com/zenn-user-upload/80ee21f8933a-20221004.png)
+## Step1: Amazon EventBridgeクイックスタートを開始する
 
-## Step1: EC2インスタンスのキーペアを作成しよう
+確認と設定の変更が終われば、早速クイックスタートでのセットアップを開始しましょう。
 
-今回作成するWordPressサーバーには、SSHやSFTPでアクセスするためのキーペアが必要です。
+AWSマネジメントコンソール上部の検索フォームで、[eventbridge]と入力します。
 
-ワークショップ用にダミーのキーペアを作成しておきましょう。
+![](https://storage.googleapis.com/zenn-user-upload/318a4a4c9ad4-20221015.png)
 
-ページ上部の検索フォームに、[ec2]と入力しましょう。
+EventBrdigeをクリックすると、管理画面のトップページに移動します。
 
-![](https://storage.googleapis.com/zenn-user-upload/7abb8659aea4-20221004.png)
+![](https://storage.googleapis.com/zenn-user-upload/a3c3d3f11eb2-20221015.png)
 
-[EC2]を選択して、EC2管理画面へ移動します。
+左側のメニューから、[クイックスタート]を選択すると、２つの選択肢が表示されます。
 
-![](https://storage.googleapis.com/zenn-user-upload/2656a58557fa-20221004.png)
+![](https://storage.googleapis.com/zenn-user-upload/a736bd13b7ba-20221015.png)
 
-左側のメニューから、[キーペア]を選択しましょう。
+StripeまたはTwilio / GitHubと連携させたい場合、下部の[Lambda関数URLを利用したインバウンドウェブフック]を利用します。
 
-その後、画面右上にある[キーペアを作成]ボタンをクリックします。
+[使用を開始する]リンクをクリックしましょう。
 
-キーペア作成画面では、名前の設定以外はデフォルトのままにしましょう。
+![](https://storage.googleapis.com/zenn-user-upload/382c50d201f9-20221015.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/d0327487c70f-20221004.png)
+連携するサービスに応じたテンプレート選択画面が表示されます。
 
-名前も、[for-stripe-workshop]など、後から用途を思い出せるものにします。
+![](https://storage.googleapis.com/zenn-user-upload/2a01d7f074f8-20221015.png)
 
-名前を入力後、[キーペアを作成]ボタンをクリックして、作成を完了させましょう。
+今回はStripeですので、[Stripe]の[設定]をクリックしましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/74664209010d-20221004.png)
+![](https://storage.googleapis.com/zenn-user-upload/64a59d160d24-20221015.png)
 
-[正常に作成されました]メッセージが表示されれば、準備完了です。
+StripeでのインバウンドWebhookをセットアップするためのページが表示されました。
 
-## Step1: AWS Step Functionsでステートマシンを作成しよう
+![](https://storage.googleapis.com/zenn-user-upload/3d4ae895b5d5-20221015.png)
+## Step2: クイックスタートから、CloudFormationを起動しよう
 
-ここからは、ノーコード・ローコードにワークフローを構築できる製品「AWS StepFunctions」を利用します。
+Stripe・GitHub・TwilioとAWSを連携するためのリソースは、CloudFormationを利用して立ち上がります。
 
-ページ上部の検索フォームに、[step functions]と入力しましょう。
+そのため、ここからはCloudFormationを利用したセットアップ方法を紹介します。
 
-![](https://storage.googleapis.com/zenn-user-upload/2be3ac826888-20221004.png)
+まず[ステップ１]でイベントバスを選択します。これは初期状態の`default`のまま進めましょう。
 
-[Step Functions]が検索結果に表示されますので、クリックします。
+![](https://storage.googleapis.com/zenn-user-upload/ea7caca4e652-20221015.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/b071a0903003-20221004.png)
+続いて[ステップ2]でCloudFormationの起動フローに移動します。
 
-ページ左側にある[ハンバーガーボタン]（横向きの線が３本あるボタン）をクリックしましょう。
+[新しいStripeウェブフック]ボタンをクリックしましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/d636eb6775b0-20221004.png)
+![](https://storage.googleapis.com/zenn-user-upload/126c5b345f89-20221015.png)
 
-[ステートマシン]を選びます。
+「Lambdaの関数URLが一般にアクセスできる形で生成される」ことに対する確認画面が表示されます。
 
-![](https://storage.googleapis.com/zenn-user-upload/75fd317c8b1a-20221004.png)
+今回立ち上げるLambdaのコードには、Stripeからのリクエストか否かを検証する処理が含まれていますので、チェックボックスをオンにして[確認]ボタンをクリックしましょう。
 
-[ステートマシンを作成]ボタンをクリックすると、ステートマシンの作成を開始できます。
+![](https://storage.googleapis.com/zenn-user-upload/efecfa4203e0-20221015.png)
 
-### 1-1: ステートマシンの作成方法・タイプを選ぶ
+CloudFormation立ち上げ画面が開きます。
 
-まずはステートマシンの作成方法とタイプを選びましょう。
+「すでにクイックスタートでスタックを立ち上げたことのある人」以外は、スタックの名前をデフォルトのまま進めましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/95ff1033630e-20221004.png)
+作成したことのある方は、一度過去に作成したスタックを削除するか、この作成ステップをスキップしてください。
 
-今回のサンプルでは、[コードでワークフローを記述]と[標準]を選択しましょう。
+![](https://storage.googleapis.com/zenn-user-upload/220c32be54c1-20221015.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/038482ccc0bf-20221004.png)
+CloudFormationの起動に必要なパラメータを指定します。[StripeWebhookSecret]が空欄ですので、一旦[test]と入力しましょう。
 
-画面下部に、コードを入力する画面が表示されました。
-
-![](https://storage.googleapis.com/zenn-user-upload/046e1440592a-20221004.png)
-
-左側のエディタ画面に、以下のJSONをコピーアンドペーストしましょう。
-
-```json
-{
-  "Comment": "A description of my state machine",
-  "StartAt": "CreateStack",
-  "States": {
-    "CreateStack": {
-      "Type": "Task",
-      "Parameters": {
-        "StackName.$": "States.Format('LAMP-{}', $.detail.created)",
-        "TemplateURL": "https://s3-external-1.amazonaws.com/cloudformation-templates-us-east-1/WordPress_Single_Instance.template",
-        "Parameters": [
-          {
-            "ParameterKey": "KeyName",
-            "ParameterValue": "for-stripe-workshop"
-          },
-          {
-            "ParameterKey": "DBName",
-            "ParameterValue": "MyDatabase"
-          },
-          {
-            "ParameterKey": "DBPassword",
-            "ParameterValue": "userDBPassword123"
-          },
-          {
-            "ParameterKey": "DBRootPassword",
-            "ParameterValue": "rootDBPassword123"
-          },
-          {
-            "ParameterKey": "DBUser",
-            "ParameterValue": "user"
-          },
-          {
-            "ParameterKey": "InstanceType",
-            "ParameterValue": "t2.micro"
-          },
-          {
-            "ParameterKey": "SSHLocation",
-            "ParameterValue": "0.0.0.0/0"
-          }
-        ]
-      },
-      "Resource": "arn:aws:states:::aws-sdk:cloudformation:createStack",
-      "Next": "DescribeStacks",
-      "ResultPath": "$.result"
-    },
-    "DescribeStacks": {
-      "Type": "Task",
-      "Parameters": {
-        "StackName.$": "$.result.StackId"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:cloudformation:describeStacks",
-      "Next": "Choice",
-      "ResultSelector": {
-        "name.$": "$.Stacks[0].StackName",
-        "status.$": "$.Stacks[0].StackStatus"
-      },
-      "ResultPath": "$.stack"
-    },
-    "Choice": {
-      "Type": "Choice",
-      "Choices": [
-        {
-          "Variable": "$.stack.status",
-          "StringEquals": "CREATE_IN_PROGRESS",
-          "Next": "Wait"
-        },
-        {
-          "Variable": "$.stack.status",
-          "StringEquals": "CREATE_COMPLETE",
-          "Next": "Success"
-        }
-      ],
-      "Default": "Fail"
-    },
-    "Fail": {
-      "Type": "Fail"
-    },
-    "Wait": {
-      "Type": "Wait",
-      "Seconds": 30,
-      "Next": "DescribeStacks (1)"
-    },
-    "DescribeStacks (1)": {
-      "Type": "Task",
-      "Parameters": {
-        "StackName.$": "$.stack.name"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:cloudformation:describeStacks",
-      "Next": "Choice",
-      "ResultSelector": {
-        "name.$": "$.Stacks[0].StackName",
-        "status.$": "$.Stacks[0].StackStatus"
-      },
-      "ResultPath": "$.stack"
-    },
-    "Success": {
-      "Type": "Succeed"
-    }
-  }
-}
-```
-
-Step Functionsでは、「ビジュアルエディタを利用したワークフローの構築」だけでなく、このようにJSONを利用してワークフローを複製・共有できます。
-
-右側のワークフローが、以下の画像のように変わればOKです。
-
-![](https://storage.googleapis.com/zenn-user-upload/039ddd69ebbc-20221004.png)
-
-[次へ]をクリックしましょう。
-
-### 1-2: ステートマシンの詳細設定を行おう
-
-続いて、ステートマシンの名前やログの設定を行います。
-
-名前は、`CreateWPWorkflow`を入力してください。
-
-また、[アクセス許可]は[新子ロールの作成]を選択しましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/a50ea13a54b6-20221004.png)
-
-ワークフローが失敗した時の調査に備えて、ログは「ERROR」を指定します。
-
-![](https://storage.googleapis.com/zenn-user-upload/3e53fef48c69-20221004.png)
-
-ロググループを新しく作成できます。ステートマシンの名前を利用できますので、デフォルトのまま使いましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/627c464d0b91-20221004.png)
-
-ページをスクロールして、[ステートマシンの作成]をクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/ad194ecb869b-20221004.png)
-
-作成成功のメッセージが表示されれば、完了です。
-
-![](https://storage.googleapis.com/zenn-user-upload/f41132855bd1-20221004.png)
-
-## Step2: IAMロールを更新して、CloudFormation経由でのEC2インスタンス作成準備をしよう
-
-ステートマシンの作成には成功しました。
-
-ですが作成したステートマシンの画面には警告メッセージが表示されています。
-
-![](https://storage.googleapis.com/zenn-user-upload/e99d16564dee-20221004.png)
-
-これは、ステートマシンがAWSのリソースを操作するために、必要な権限を持っていないことを示しています。
-
-[IAMでロールを編集]ボタンをクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/d22153f92f3c-20221004.png)
-
-IAMロールの編集画面に移動しました。
-
-[許可ポリシー]エリアの右側にある[許可を追加]をクリックし、[インラインポリシーを作成]を選択しましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/179e835335ed-20221004.png)
-
-ポリシー作成画面が表示されます。
-
-![](https://storage.googleapis.com/zenn-user-upload/ea051d9737ac-20221004.png)
-
-今回はここでまとめて権限設定を行うため、[JSON]タブを選択しましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/dd81f5e8ac95-20221004.png)
-
-JSON入力欄に、以下のコードを上書き入力します。
-
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "VisualEditor0",
-            "Effect": "Allow",
-            "Action": [
-                "lambda:InvokeFunction",
-                "dynamodb:GetItem",
-                "dynamodb:PutItem",
-                "dynamodb:DeleteItem",
-                "ec2:AuthorizeSecurityGroupIngress",
-                "ec2:DescribeInstances",
-                "ec2:StartInstances",
-                "ec2:CreateSecurityGroup",
-                "ec2:DescribeKeyPairs",
-                "ec2:TerminateInstances",
-                "ec2:RunInstances",
-                "ec2:StopInstances",
-                "ec2:DescribeSecurityGroups",
-                "s3:PutObject",
-                "cloudformation:DescribeStackResource",
-                "cloudformation:DescribeStackEvents",
-                "cloudformation:UpdateStack",
-                "cloudformation:ListStackResources",
-                "cloudformation:DescribeStacks",
-                "cloudformation:CreateStack",
-                "cloudformation:DeleteStack",
-                "ec2:DeleteSecurityGroup"
-            ],
-            "Resource": "*"
-        }
-    ]
-}
-```
-![](https://storage.googleapis.com/zenn-user-upload/a83662dba301-20221004.png)
-
-[ポリシーの確認]をクリックすると、権限の確認画面が表示されます。
-
-![](https://storage.googleapis.com/zenn-user-upload/c3a71eaafd57-20221004.png)
-
-名前を指定できますので、[stripeWorkshopPolicy]を入力しましょう。
-
-[ポリシーの作成]をクリックして、作業完了です。
-
-## Step3: 作成したワークフローを動かしてみよう
-
-権限設定が完了しましたので、一度実際にワークフローを動かしてみましょう。
-
-Step Functionsのステートマシン画面に戻ります。
-
-![](https://storage.googleapis.com/zenn-user-upload/e7d8ca06906e-20221004.png)
-
-[実行]セクション右側にある、[実行の開始]ボタンをクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/bd9fd0cf3f41-20221004.png)
-
-入力データを指定して、ワークフローを手動実行する画面が開きます。
-
-以下のJSONを[入力]部分に上書き入力しましょう。
-
-```json
-{
-    "detail":{
-      "created": "helloWP"
-    }
-}
-```
-
-入力できれば、[実行の開始]ボタンをクリックします。
-
-![](https://storage.googleapis.com/zenn-user-upload/e4d7aa038252-20221004.png)
-
-[グラフインスペクター]にワークフローが色付きで表示されれば、実行成功です。
-
-![](https://storage.googleapis.com/zenn-user-upload/f4ebebb67921-20221004.png)
-
-WordPressが立ち上がるまで、数分かかります。
-
-![](https://storage.googleapis.com/zenn-user-upload/7dd48c9787fa-20221004.png)
-
-[SUCCESS]が緑色になれば、ワークフロー完了です。
-
-### CloudFormation管理画面から、WordPressにアクセスしよう
-
-作成したサーバーへ実際にアクセスしてみましょう。
-
-まずはCloudFormation管理画面へ移動します。
-
-上部の検索フォームで[cloudformation]と入力し、[CloudFormation]をクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/9a1bb0ff7756-20221004.png)
-
-一覧画面に`LAMP-helloWP`が表示されていますので、クリックしましょう。
-
-今回のサンプルでは、`LAMP-{実行時に設定した名前}`でリソースが作成されます。
-
-![](https://storage.googleapis.com/zenn-user-upload/32cec4ba87e9-20221004.png)
-
-詳細画面で、[出力]タブを選びましょう。`WebsiteURL`にURLが表示されています。
-
-![](https://storage.googleapis.com/zenn-user-upload/9b396f92b880-20221004.png)
-
-クリックすると、WordPressのインストール画面に移動します。
-
-![](https://storage.googleapis.com/zenn-user-upload/9ae7c4613e58-20221004.png)
+この値は後ほど変更します。
+
+![](https://storage.googleapis.com/zenn-user-upload/4be3992a5c71-20221015.png)
+
+[機能と変換]でチェックボックスが表示されます。これはCloudFormationがIAMリソースを作成するなどの兼ね合いがあるため表示されています。
+
+すべてにチェックをつけて、[スタックの作成]をクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/455ad22927f2-20221015.png)
+
+作成画面に移動します。
+
+![](https://storage.googleapis.com/zenn-user-upload/c3cecae5879a-20221015.png)
+
+ステータスが[CREATE_COMPLETE]に変われば作成完了です。
+
+![](https://storage.googleapis.com/zenn-user-upload/2f6b5c82fb24-20221015.png)
+
+## Step3: Stripe Webhookに、Lambda Functions URLを登録しよう
+
+StripeのWebhookイベントを受け付けるためのURLが生成できました。
+
+ここからは、StripeのWebhookへの紐付けと、署名検証の設定を行います。
+
+先ほど作成したCloudFormationの、[出力]タブをクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/393d82abbe9c-20221015.png)
+
+[FunctionURLEndpoint]にURLが表示されていますので、コピーします。
+
+![](https://storage.googleapis.com/zenn-user-upload/faf340ce49b0-20221015.png)
+
+
+### 3-1: Stripeダッシュボードにログインしよう
+
+まずはStripeダッシュボードにログインしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/66f726dd3f1d-20221005.png)
+
+アカウントを作成していない場合は、https://dashboard.stripe.com からアカウントを新規に作成できます。
+
+本番利用の申請を行わない場合、メールアドレスと氏名だけでアカウントを作ることができます。
+
+![](https://storage.googleapis.com/zenn-user-upload/c7759598b3c3-20221005.png)
+
+#### すでに本番利用しているアカウントをお持ちの場合
+
+本番利用中のStripeアカウントをお持ちの場合、アカウントを新しく追加することをお勧めします。
+
+アカウントを分けることで、「URLやAPIキーを本番環境のものと取り違えるリスクを減らすこと」や「システム動作確認のノイズになるテストデータの混入防止」などが期待できます。
+
+Stripeでは、ダッシュボードログイン後、左上のアカウント名をクリックすることで、[新規アカウント]ボタンをクリックできます。
+
+![](https://storage.googleapis.com/zenn-user-upload/7755ffde8c70-20221005.png)
+
+クリックすると、アカウント名とビジネスを提供する国を指定する画面が立ち上がります。
+
+名前は`Amazon EventBridgeワークショップ`を、国は`日本`を選択しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/88c59395e810-20221005.png)
+
+### 3-2: Lambda Functions URLをStripe Webhookに登録しよう
+
+[開発者]タブをクリックし、左側のメニューから[Webhook]を選択しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/f584383f5c0a-20221005.png)
+
+Webhookを作成していない場合は、画面の中央下部に[エンドポイントを追加]ボタンが表示されます。
+
+すでにWebhookを作成しているアカウントでは、画面右上部に[エンドポイントを追加]ボタンが表示されてます。
+
+どちらかのボタンをクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/b92b94ca31cc-20221015.png)
+
+Webhookの設定画面が開きます。
+
+右側にサンプルコードが表示されますので、コードを書いて組み込みする場合は、これをベースに開発しましょう。
+
+今回は、AWSに処理を委ねるため、右側のコードは無視します。
+
+![](https://storage.googleapis.com/zenn-user-upload/86896e667204-20221015.png)
+
+[エンドポイントURL]に、先ほどCloudFormationの[出力]タブでコピーしたURLを貼り付けます。
+
+![](https://storage.googleapis.com/zenn-user-upload/867e5e317f7f-20221015.png)
+
+[説明]と[リッスンする]そして[バージョン]は、デフォルトのまま進めましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/2b818252f9ed-20221015.png)
+
+[リッスンするイベント]にて、[イベントを選択]をクリックします。
+
+![](https://storage.googleapis.com/zenn-user-upload/9a415b51a15d-20221015.png)
+
+Stripeから送信できるイベントのリストが表示されます。
+
+検索フォームに[customer.subscription]と入力しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/cd9de095e685-20221015.png)
+
+`customer.subscription.created`と`customer.subscription.deleted`の２つにチェックを入れます。
+
+![](https://storage.googleapis.com/zenn-user-upload/714903837b2e-20221015.png)
+
+[イベントを追加]ボタンをクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/629d44d1099d-20221015.png)
+
+選択した２つのイベントが追加されました。
+
+[イベントを追加]ボタンをクリックして、登録を完了させます。
+
+![](https://storage.googleapis.com/zenn-user-upload/c88bc2e7d5dc-20221015.png)
+
+下の画像と同じ、Webhookの設定詳細画面が表示されれば、OKです。
+
+![](https://storage.googleapis.com/zenn-user-upload/62f77d4bb278-20221015.png)
+
+### 3-3: Webhookの署名シークレットを取得し、AWSに設定しよう
+
+Webhook APIに対して、Stripe以外からリクエストが送信できてしまうと、不正なデータが紛れ込むリスクが発生します。
+
+そのため、署名検証のためのシークレットキーを取得して、AWSのクイックスタートで起動したLambdaにて検証処理を実施しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/62f77d4bb278-20221015.png)
+
+先ほどの画面に、[署名シークレット]項目が表示されています。
+
+![](https://storage.googleapis.com/zenn-user-upload/f1969945f088-20221015.png)
+
+[表示]をクリックすると、`whsec_xxx`から始まるキーが表示されます。このキーをコピーしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/aaec1a308503-20221015.png)
+
+AWSのマネジメントコンソールに戻り、CloudFormation管理画面で、先ほど立ち上げたクイックスタートリソースを選びます。
+
+![](https://storage.googleapis.com/zenn-user-upload/64d1138c84c1-20221015.png)
+
+スタック名（`StripeInboundWebhookStack`）の右に、[更新]ボタンがあるのでクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/64d1138c84c1-20221015.png)
+
+CloudFomartionテンプレートそのものを変更するかを聞かれます。
+
+今回は変更しませんので、[現在のテンプレートを使用]を選んで、[次へ]をクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/a67632c53b02-20221015.png)
+
+続いてパラメータ設定画面が開きます。
+
+![](https://storage.googleapis.com/zenn-user-upload/feefdd967ff2-20221015.png)
+
+`StripeWebhookSecret`がロックされていますので、[現在の値を使用]のチェックボックスを外しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/b1906116ff52-20221015.png)
+
+先ほどStripeダッシュボードでコピーした、`whsec_`から始まるキーを、入力します。
+
+![](https://storage.googleapis.com/zenn-user-upload/3b626644e13b-20221015.png)
+
+[次へ]をクリックすると、タグなどのカスタマイズ画面が開きます。
+
+ここの変更は行いませんので、スクロールして[次へ]を選びましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/f2a6a2a139bf-20221015.png)
+
+レビュー（確認）画面が開きます。
+
+![](https://storage.googleapis.com/zenn-user-upload/d36eb51a6a3e-20221015.png)
+
+スクロールすると、変更するリソースの表示や、確認のチェックボックスが表示されます。
+
+チェックボックスをオンにして、[スタックの更新]をクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/f43f1d4ad18c-20221015.png)
+
+これでスタックの更新が完了すれば、署名検証の準備まで完了です。
 
 ## おさらい
 
-- AWS StepFunctionsを利用して、サーバーのセットアップなどのワークフローが実現できる
-- ChoiceやWaitを利用して、時間のかかるタスクを待機することができる
-- JSONを利用して、Step Functionsのステートマシン定義をシェアしたり、コード管理できる
+- Amazon EventBridgeでは、クイックスタートとして特定のSaaSとの連携準備が簡単にできる
+- Stripe/GitHub/Twilioの場合、Lambda Functions URLを利用するため、署名検証処理で不正なリクエストを予防する必要がある
+- 先にリソースを作成して、URLを取得してから、署名シークレットをStripeダッシュボードで発行する
 
-
-## [Advanced] 実運用を目指すための、チャレンジ項目
-
-AWSが用意しているサンプルのCloudFormationテンプレートを利用して、簡単にWordPressサーバーを立ち上げるワークフローを構築しました。
-
-実際にシステムとして利用するには、このステートマシンにさまざまなタスクを追加する必要があります。
-
-以下にアイディアやヒントを用意しましたので、時間に余裕がある方はぜひ挑戦して、ご自身のブログやコメントなどでお知らせください。
-
-- Step FunctionsとS3を利用して、EC2のキーペア作成と共有を自動化しよう
-- Amazon SESやSNSで、顧客または社内にサーバー立ち上げの成功・失敗を通知しよう
-- CloudFormationのテンプレートを別のものや自作品に差し替えてみよう
+次のステップでは、一旦EventBridgeから離れて、「WordPressを立ち上げるワークフローのデモ」をStep Functionsで起動させます。

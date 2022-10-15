@@ -1,470 +1,390 @@
 ---
-title: "Chapter2: Stripe Payment Linksで、サーバー申し込みフォームを用意しよう"
+title: "Chapter2: AWS Step Functionsで、WordPressサーバーを起動しよう"
 ---
 
-CloudFormation経由でサーバーを起動するワークフローが用意できました。
+まずはサービスのコア部分である、「サーバーのセットアップワークフロー」を構築しましょう。
 
-続いて、サーバー起動のワークフローを開始するための「申し込みフォーム」をStripeで用意しましょう。
+## AWSマネージメントコンソールにログインしよう
 
-## Stripeダッシュボードにログインしよう
+まずはAWSマネージメントコンソールにログインしましょう。
 
-まずはStripeダッシュボードにログインしましょう。
+[https://aws.amazon.com/jp/](https://aws.amazon.com/jp/?nc2=h_lg) から、[コンソールにサインイン]をクリックします。
 
-![](https://storage.googleapis.com/zenn-user-upload/66f726dd3f1d-20221005.png)
+![](https://storage.googleapis.com/zenn-user-upload/f29b1b0e8b2f-20221004.png)
 
-アカウントを作成していない場合は、https://dashboard.stripe.com からアカウントを新規に作成できます。
+その後、作成済みのIAMユーザーでログインしましょう。
 
-本番利用の申請を行わない場合、メールアドレスと氏名だけでアカウントを作ることができます。
+![](https://storage.googleapis.com/zenn-user-upload/b52a40f52471-20221004.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/c7759598b3c3-20221005.png)
+ログインに成功すれば、マネージメントコンソールのTOPページが表示されます。
 
-### すでに本番利用しているアカウントをお持ちの場合
+![](https://storage.googleapis.com/zenn-user-upload/c1546982db63-20221004.png)
 
-本番利用中のStripeアカウントをお持ちの場合、アカウントを新しく追加することをお勧めします。
+### リージョンは、`us-east-1`
 
-アカウントを分けることで、「URLやAPIキーを本番環境のものと取り違えるリスクを減らすこと」や「システム動作確認のノイズになるテストデータの混入防止」などが期待できます。
+ワークショップを進める便宜上、リージョンは`米国東部（バージニア北部） us-east-1`を指定しましょう。
 
-Stripeでは、ダッシュボードログイン後、左上のアカウント名をクリックすることで、[新規アカウント]ボタンをクリックできます。
+右上に「バージニア北部」と表示されていない場合、クリックして変更します。
 
-![](https://storage.googleapis.com/zenn-user-upload/7755ffde8c70-20221005.png)
+![](https://storage.googleapis.com/zenn-user-upload/80ee21f8933a-20221004.png)
 
-クリックすると、アカウント名とビジネスを提供する国を指定する画面が立ち上がります。
+## Step1: EC2インスタンスのキーペアを作成しよう
 
-名前は`Amazon EventBridgeワークショップ`を、国は`日本`を選択しましょう。
+今回作成するWordPressサーバーには、SSHやSFTPでアクセスするためのキーペアが必要です。
 
-![](https://storage.googleapis.com/zenn-user-upload/88c59395e810-20221005.png)
+ワークショップ用にダミーのキーペアを作成しておきましょう。
 
+ページ上部の検索フォームに、[ec2]と入力しましょう。
 
-## Step1: Payment Linksでサーバー申し込みフォームを作成しよう
+![](https://storage.googleapis.com/zenn-user-upload/7abb8659aea4-20221004.png)
 
-Stripeアカウントの用意ができれば、早速申し込みフォームを作成しましょう。
+[EC2]を選択して、EC2管理画面へ移動します。
 
-ダッシュボード右上の[作成]をクリックし、[支払いリンク]を選択します。
-もしくは、キーボードで[c]->[l]の順にキーを押しましょう。
+![](https://storage.googleapis.com/zenn-user-upload/2656a58557fa-20221004.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/0c2890c4931c-20221005.png)
+左側のメニューから、[キーペア]を選択しましょう。
 
-支払いリンク（Payment Links）作成画面が開きます。
+その後、画面右上にある[キーペアを作成]ボタンをクリックします。
 
-![](https://storage.googleapis.com/zenn-user-upload/1ccee5132957-20221005.png)
+キーペア作成画面では、名前の設定以外はデフォルトのままにしましょう。
 
-### 1-1: 支払いタイプを[商品またはサブスクリプション]に設定する
+![](https://storage.googleapis.com/zenn-user-upload/d0327487c70f-20221004.png)
 
-Payment Linksでは、NPO団体への寄付のような「買い手が価格を決める」方法を選ぶこともできます。
+名前も、[for-stripe-workshop]など、後から用途を思い出せるものにします。
 
-[タイプ]で[顧客が支払い金額を選択する]を選択することでモードを変更できますが、今回はホスティングサービスですので、[商品またはサブスクリプション]のまま進めます。
+名前を入力後、[キーペアを作成]ボタンをクリックして、作成を完了させましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/179a13eeaf0d-20221005.png)
+![](https://storage.googleapis.com/zenn-user-upload/74664209010d-20221004.png)
 
-### 1-2: 申し込みするプラン情報を登録する
+[正常に作成されました]メッセージが表示されれば、準備完了です。
 
-続いて申し込みするプランを登録しましょう。
+## Step1: AWS Step Functionsでステートマシンを作成しよう
 
-[商品]の入力欄を選択すると、[新しい商品を追加]が表示されますので、クリックします。
+ここからは、ノーコード・ローコードにワークフローを構築できる製品「AWS StepFunctions」を利用します。
 
-![](https://storage.googleapis.com/zenn-user-upload/d7bbbfb2d053-20221005.png)
+ページ上部の検索フォームに、[step functions]と入力しましょう。
 
-Stripeに商品や料金プランを登録する画面が立ち上がります。
+![](https://storage.googleapis.com/zenn-user-upload/2be3ac826888-20221004.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/8729b43a05d3-20221005.png)
+[Step Functions]が検索結果に表示されますので、クリックします。
 
-ここでは、以下のように情報を入力しましょう。
+![](https://storage.googleapis.com/zenn-user-upload/b071a0903003-20221004.png)
 
-|項目名|値|
-|:--|:--|
-|名前|WordPressホスティング|
-|説明|（空欄）|
-|画像|（空欄）|
-|価格|4000|
-|継続・一括|継続|
-|請求期間|月次|
+ページ左側にある[ハンバーガーボタン]（横向きの線が３本あるボタン）をクリックしましょう。
 
-[商品を追加]ボタンをクリックして、登録を完了しましょう。
+![](https://storage.googleapis.com/zenn-user-upload/d636eb6775b0-20221004.png)
 
-登録に成功していれば、[商品]欄やプレビュー画面に[WordPressホスティング]が表示されています。
+[ステートマシン]を選びます。
 
-![](https://storage.googleapis.com/zenn-user-upload/5dec2769a7ef-20221005.png)
+![](https://storage.googleapis.com/zenn-user-upload/75fd317c8b1a-20221004.png)
 
-### 1-3: 支払リンクの作成を完了させよう
+[ステートマシンを作成]ボタンをクリックすると、ステートマシンの作成を開始できます。
 
-ページ上部の[次へ]をクリックすると、確認画面またはConnectを利用する場合の設定画面が表示されます。
+### 1-1: ステートマシンの作成方法・タイプを選ぶ
 
-![](https://storage.googleapis.com/zenn-user-upload/0cf5347a61b7-20221005.png)
+まずはステートマシンの作成方法とタイプを選びましょう。
 
-[連結アカウントに支払いを分割]が表示され、チェックボックスがオンになっている場合は、解除しましょう。
+![](https://storage.googleapis.com/zenn-user-upload/95ff1033630e-20221004.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/152422c2f7f8-20221005.png)
+今回のサンプルでは、[コードでワークフローを記述]と[標準]を選択しましょう。
 
-[リンクを作成]をクリックすると、作成が完了します。
+![](https://storage.googleapis.com/zenn-user-upload/038482ccc0bf-20221004.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/24c683987f68-20221005.png)
+画面下部に、コードを入力する画面が表示されました。
 
-発行されたURLやQRコードを使って、サービスの申し込みページを簡単に顧客へ共有することができます。
+![](https://storage.googleapis.com/zenn-user-upload/046e1440592a-20221004.png)
 
-## Step2:  Webhook設定で、サブスクリプション申し込みイベントをAmazon EventBridgeに送信しよう
-
-支払リンクの作成が完了しましたので、サブスクリプション申し込み時にAWS StepFunctionsのワークフローを起動できるようにしましょう。
-
-Stripeダッシュボードにて、Amazon EventBridgeにデータを送信するWebhookの設定を変更します。
-
-[開発者]タブをクリックし、左側のメニューから[Webhook]を選択しましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/f584383f5c0a-20221005.png)
-
-Amazon EventBridgeのクイックスタートが完了していれば、**lambda-url**を含むURLのWebhookがすでに登録されています。
-
-このWebhookをクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/4b9521a3d04e-20221005.png)
-
-詳細ページにて、Stripeから送信するイベント内容を変更できます。
-
-URL右側にある[...]をクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/864b6c12948d-20221005.png)
-
-[詳細情報の更新]をクリックします。
-
-![](https://storage.googleapis.com/zenn-user-upload/f6b912be4e77-20221005.png)
-
-[送信イベント]にて、検索フォームに`customer.subscription.created`を入力し、一致するものをクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/7fba50cf2342-20221005.png)
-
-`customer.subscription.created`が追加された状態で、`エンドポイントを更新`を選択します。
-
-これで、このStripeアカウントからサブスクリプションが新規作成された場合、Amazon EventBridgeにイベントが送信されるようになります。
-## Step３: Amazon EventBridgeで、サブスクリプション申し込み時のサーバー起動ワークフローを設定しよう
-
-最後に、StripeのイベントとStepFunctionsを紐づける作業をEventBridgeで行いましょう。
-
-### 3-1: Amazon EventBridgeコンソールに移動する
-
-紐付け作業は、AWSのマネージメントコンソール上で行います。
-
-ページ上部の検索フォームに`eventbridge`を入力し、EventBridgeをクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/f5952e857871-20221005.png)
-
-EventBridge管理画面では、左側メニューから[ルール]を選択します。
-
-![](https://storage.googleapis.com/zenn-user-upload/13be672e6f8c-20221005.png)
-
-
-### 3-2: ルールを作成する
-
-[イベントバス]が[default]になっていることを確認しましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/74ed33db07c1-20221005.png)
-
-[ルール]の右側にある[ルールを作成]ボタンをクリックします。
-
-![](https://storage.googleapis.com/zenn-user-upload/8d19c473e972-20221005.png)
-
-ルール作成のウィザードが立ち上がりました。
-
-![](https://storage.googleapis.com/zenn-user-upload/000647e2726b-20221005.png)
-
-名前には、`stripe-craete-subscription`を入力しましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/91f926218547-20221005.png)
-
-イベントバスが`default`になっていることを確認します。
-
-![](https://storage.googleapis.com/zenn-user-upload/7c111984cdb9-20221005.png)
-
-`ルールタイプ`は、`イベントパターンを持つルール`を指定しましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/33a37e90e58d-20221005.png)
-
-[次へ]をクリックして、イベントパターンの設定に移ります。
-
-### 3-3: イベントパターン設定で、サブスクリプション申し込みのみ受け付けるルールを設定しよう
-
-イベントパターンの設定では、「どのようなイベントを処理するか」を設定します。
-
-今回は、「Stripeから送信された、サブスクリプションの申し込みイベント」のみを処理するルールを作りましょう。
-
-イベントソースでは、`AWSイベントまたはEventBridgeパートナーイベント`を選択します。
-
-![](https://storage.googleapis.com/zenn-user-upload/5a8843164ea7-20221005.png)
-
-続いてサンプルイベントを設定しましょう。
-`ご自身名前を入力`を選択し、以下のJSONをコピー&ペーストします。
+左側のエディタ画面に、以下のJSONをコピーアンドペーストしましょう。
 
 ```json
 {
-  "version": "0",
-  "id": "fbf2573e-ed83-d8c4-9d68-8cf7eee6aec9",
-  "detail-type": "customer.subscription.created",
-  "source": "stripe.com",
-  "account": "12345678921",
-  "time": "2022-08-08T19:58:17Z",
-  "region": "us-east-1",
-  "resources": [],
-  "detail": {
-    "id": "xxx_3LUc5bBvzWSP8ADK1CqxxxFe",
-    "object": "event",
-    "api_version": "2020-08-27; orders_beta=v4",
-    "created": 1659988697,
-    "data": {
-      "object": {
-        "id": "sub_1LpVBNL6R1kGwUF4LQjOebhW",
-        "object": "subscription",
-        "application": null,
-        "application_fee_percent": null,
-        "automatic_tax": {
-          "enabled": false
-        },
-        "billing_cycle_anchor": 1664967033,
-        "billing_thresholds": null,
-        "cancel_at": null,
-        "cancel_at_period_end": false,
-        "canceled_at": null,
-        "collection_method": "charge_automatically",
-        "created": 1664967033,
-        "currency": "usd",
-        "current_period_end": 1667645433,
-        "current_period_start": 1664967033,
-        "customer": "cus_MYcQXlENmEltqQ",
-        "days_until_due": null,
-        "default_payment_method": null,
-        "default_source": null,
-        "default_tax_rates": [],
-        "description": null,
-        "discount": null,
-        "ended_at": null,
-        "items": {
-          "object": "list",
-          "data": [{
-            "id": "si_MYcQhfIgD0z1kb",
-            "object": "subscription_item",
-            "billing_thresholds": null,
-            "created": 1664967034,
-            "metadata": {},
-            "plan": {
-              "id": "price_1LpVBML6R1kGwUF4BUea6LSO",
-              "object": "plan",
-              "active": true,
-              "aggregate_usage": null,
-              "amount": 1500,
-              "amount_decimal": "1500",
-              "billing_scheme": "per_unit",
-              "created": 1664967032,
-              "currency": "usd",
-              "interval": "month",
-              "interval_count": 1,
-              "livemode": false,
-              "metadata": {},
-              "nickname": null,
-              "product": "prod_MYcQVAEEZzHfsq",
-              "tiers_mode": null,
-              "transform_usage": null,
-              "trial_period_days": null,
-              "usage_type": "licensed"
-            },
-            "price": {
-              "id": "price_1LpVBML6R1kGwUF4BUea6LSO",
-              "object": "price",
-              "active": true,
-              "billing_scheme": "per_unit",
-              "created": 1664967032,
-              "currency": "usd",
-              "custom_unit_amount": null,
-              "livemode": false,
-              "lookup_key": null,
-              "metadata": {},
-              "nickname": null,
-              "product": "prod_MYcQVAEEZzHfsq",
-              "recurring": {
-                "aggregate_usage": null,
-                "interval": "month",
-                "interval_count": 1,
-                "trial_period_days": null,
-                "usage_type": "licensed"
-              },
-              "tax_behavior": "unspecified",
-              "tiers_mode": null,
-              "transform_quantity": null,
-              "type": "recurring",
-              "unit_amount": 1500,
-              "unit_amount_decimal": "1500"
-            },
-            "quantity": 1,
-            "subscription": "sub_1LpVBNL6R1kGwUF4LQjOebhW",
-            "tax_rates": []
-          }],
-          "has_more": false,
-          "total_count": 1,
-          "url": "/v1/subscription_items?subscription=sub_1LpVBNL6R1kGwUF4LQjOebhW"
-        },
-        "latest_invoice": "in_1LpVBNL6R1kGwUF43rS4NwaO",
-        "livemode": false,
-        "metadata": {},
-        "next_pending_invoice_item_invoice": null,
-        "pause_collection": null,
-        "payment_settings": {
-          "payment_method_options": null,
-          "payment_method_types": null,
-          "save_default_payment_method": "off"
-        },
-        "pending_invoice_item_interval": null,
-        "pending_setup_intent": null,
-        "pending_update": null,
-        "plan": {
-          "id": "price_1LpVBML6R1kGwUF4BUea6LSO",
-          "object": "plan",
-          "active": true,
-          "aggregate_usage": null,
-          "amount": 1500,
-          "amount_decimal": "1500",
-          "billing_scheme": "per_unit",
-          "created": 1664967032,
-          "currency": "usd",
-          "interval": "month",
-          "interval_count": 1,
-          "livemode": false,
-          "metadata": {},
-          "nickname": null,
-          "product": "prod_MYcQVAEEZzHfsq",
-          "tiers_mode": null,
-          "transform_usage": null,
-          "trial_period_days": null,
-          "usage_type": "licensed"
-        },
-        "quantity": 1,
-        "schedule": null,
-        "start_date": 1664967033,
-        "status": "active",
-        "test_clock": null,
-        "transfer_data": null,
-        "trial_end": null,
-        "trial_start": null
-      }
-
+  "Comment": "A description of my state machine",
+  "StartAt": "CreateStack",
+  "States": {
+    "CreateStack": {
+      "Type": "Task",
+      "Parameters": {
+        "StackName.$": "States.Format('LAMP-{}', $.detail.created)",
+        "TemplateURL": "https://s3-external-1.amazonaws.com/cloudformation-templates-us-east-1/WordPress_Single_Instance.template",
+        "Parameters": [
+          {
+            "ParameterKey": "KeyName",
+            "ParameterValue": "for-stripe-workshop"
+          },
+          {
+            "ParameterKey": "DBName",
+            "ParameterValue": "MyDatabase"
+          },
+          {
+            "ParameterKey": "DBPassword",
+            "ParameterValue": "userDBPassword123"
+          },
+          {
+            "ParameterKey": "DBRootPassword",
+            "ParameterValue": "rootDBPassword123"
+          },
+          {
+            "ParameterKey": "DBUser",
+            "ParameterValue": "user"
+          },
+          {
+            "ParameterKey": "InstanceType",
+            "ParameterValue": "t2.micro"
+          },
+          {
+            "ParameterKey": "SSHLocation",
+            "ParameterValue": "0.0.0.0/0"
+          }
+        ]
+      },
+      "Resource": "arn:aws:states:::aws-sdk:cloudformation:createStack",
+      "Next": "DescribeStacks",
+      "ResultPath": "$.result"
     },
-    "livemode": false,
-    "pending_webhooks": 3,
-    "request": {
-      "id": "req_xxxxxxxxx",
-      "idempotency_key": "xxxxxx-e095-4b13-a5bc-xxxxxxxxx"
+    "DescribeStacks": {
+      "Type": "Task",
+      "Parameters": {
+        "StackName.$": "$.result.StackId"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:cloudformation:describeStacks",
+      "Next": "Choice",
+      "ResultSelector": {
+        "name.$": "$.Stacks[0].StackName",
+        "status.$": "$.Stacks[0].StackStatus"
+      },
+      "ResultPath": "$.stack"
     },
-    "type": "customer.subscription.created"
+    "Choice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.stack.status",
+          "StringEquals": "CREATE_IN_PROGRESS",
+          "Next": "Wait"
+        },
+        {
+          "Variable": "$.stack.status",
+          "StringEquals": "CREATE_COMPLETE",
+          "Next": "Success"
+        }
+      ],
+      "Default": "Fail"
+    },
+    "Fail": {
+      "Type": "Fail"
+    },
+    "Wait": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "Next": "DescribeStacks (1)"
+    },
+    "DescribeStacks (1)": {
+      "Type": "Task",
+      "Parameters": {
+        "StackName.$": "$.stack.name"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:cloudformation:describeStacks",
+      "Next": "Choice",
+      "ResultSelector": {
+        "name.$": "$.Stacks[0].StackName",
+        "status.$": "$.Stacks[0].StackStatus"
+      },
+      "ResultPath": "$.stack"
+    },
+    "Success": {
+      "Type": "Succeed"
+    }
   }
 }
 ```
 
-![](https://storage.googleapis.com/zenn-user-upload/b8528dbe2866-20221005.png)
+Step Functionsでは、「ビジュアルエディタを利用したワークフローの構築」だけでなく、このようにJSONを利用してワークフローを複製・共有できます。
 
-[イベントパターン]にて、フィルタリングルールをJSONで定義します。
-![](https://storage.googleapis.com/zenn-user-upload/b89f03e5af3c-20221005.png)
+右側のワークフローが、以下の画像のように変わればOKです。
 
-[イベントパターンのフォーム]から選択することも可能ですが、今回は[カスタムパターン（JSONエディタ）]タブを選びましょう。
+![](https://storage.googleapis.com/zenn-user-upload/039ddd69ebbc-20221004.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/95067d4b45d4-20221005.png)
+[次へ]をクリックしましょう。
 
-以下のJSONをエディタにコピー＆ペーストしましょう。
+### 1-2: ステートマシンの詳細設定を行おう
+
+続いて、ステートマシンの名前やログの設定を行います。
+
+名前は、`CreateWPWorkflow`を入力してください。
+
+また、[アクセス許可]は[新子ロールの作成]を選択しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/a50ea13a54b6-20221004.png)
+
+ワークフローが失敗した時の調査に備えて、ログは「ERROR」を指定します。
+
+![](https://storage.googleapis.com/zenn-user-upload/3e53fef48c69-20221004.png)
+
+ロググループを新しく作成できます。ステートマシンの名前を利用できますので、デフォルトのまま使いましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/627c464d0b91-20221004.png)
+
+ページをスクロールして、[ステートマシンの作成]をクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/ad194ecb869b-20221004.png)
+
+作成成功のメッセージが表示されれば、完了です。
+
+![](https://storage.googleapis.com/zenn-user-upload/f41132855bd1-20221004.png)
+
+## Step2: IAMロールを更新して、CloudFormation経由でのEC2インスタンス作成準備をしよう
+
+ステートマシンの作成には成功しました。
+
+ですが作成したステートマシンの画面には警告メッセージが表示されています。
+
+![](https://storage.googleapis.com/zenn-user-upload/e99d16564dee-20221004.png)
+
+これは、ステートマシンがAWSのリソースを操作するために、必要な権限を持っていないことを示しています。
+
+[IAMでロールを編集]ボタンをクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/d22153f92f3c-20221004.png)
+
+IAMロールの編集画面に移動しました。
+
+[許可ポリシー]エリアの右側にある[許可を追加]をクリックし、[インラインポリシーを作成]を選択しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/179e835335ed-20221004.png)
+
+ポリシー作成画面が表示されます。
+
+![](https://storage.googleapis.com/zenn-user-upload/ea051d9737ac-20221004.png)
+
+今回はここでまとめて権限設定を行うため、[JSON]タブを選択しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/dd81f5e8ac95-20221004.png)
+
+JSON入力欄に、以下のコードを上書き入力します。
 
 ```json
 {
-  "source": [{
-    "prefix": "stripe.com"
-  }],
-  "detail-type": ["customer.subscription.created"]
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "lambda:InvokeFunction",
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:DescribeInstances",
+                "ec2:StartInstances",
+                "ec2:CreateSecurityGroup",
+                "ec2:DescribeKeyPairs",
+                "ec2:TerminateInstances",
+                "ec2:RunInstances",
+                "ec2:StopInstances",
+                "ec2:DescribeSecurityGroups",
+                "s3:PutObject",
+                "cloudformation:DescribeStackResource",
+                "cloudformation:DescribeStackEvents",
+                "cloudformation:UpdateStack",
+                "cloudformation:ListStackResources",
+                "cloudformation:DescribeStacks",
+                "cloudformation:CreateStack",
+                "cloudformation:DeleteStack",
+                "ec2:DeleteSecurityGroup"
+            ],
+            "Resource": "*"
+        }
+    ]
 }
 ```
-![](https://storage.googleapis.com/zenn-user-upload/15eca6c2851e-20221005.png)
+![](https://storage.googleapis.com/zenn-user-upload/a83662dba301-20221004.png)
 
-[テストパターン]ボタンをクリックすることで、サンプルイベントで入力したJSONがフィルターに一致するか否かをテストできます。
+[ポリシーの確認]をクリックすると、権限の確認画面が表示されます。
 
-![](https://storage.googleapis.com/zenn-user-upload/6a72427d7897-20221005.png)
+![](https://storage.googleapis.com/zenn-user-upload/c3a71eaafd57-20221004.png)
 
-上の画像のように、緑色のメッセージが表示されていればOKです。
+名前を指定できますので、[stripeWorkshopPolicy]を入力しましょう。
 
-赤色が表示された場合は、「サンプルイベントのJSONデータが、フィルターに一致しない」ことを示しています。
-サンプルイベントのデータまたはフィルターのJSONを見直して再度試しましょう。
+[ポリシーの作成]をクリックして、作業完了です。
 
+## Step3: 作成したワークフローを動かしてみよう
 
-![](https://storage.googleapis.com/zenn-user-upload/513401e06461-20221005.png)
+権限設定が完了しましたので、一度実際にワークフローを動かしてみましょう。
 
-フィルターの設定に成功すれば、[次へ]をクリックしましょう。
-### 3-4: ターゲットにStepFunctionsを指定しよう
+Step Functionsのステートマシン画面に戻ります。
 
-続いて、イベントパターンと一致した場合に実行する処理を設定します。
+![](https://storage.googleapis.com/zenn-user-upload/e7d8ca06906e-20221004.png)
 
-[ターゲットタイプ]を[AWSのサービス]に設定しましょう。
+[実行]セクション右側にある、[実行の開始]ボタンをクリックしましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/d9521ecb8937-20221005.png)
+![](https://storage.googleapis.com/zenn-user-upload/bd9fd0cf3f41-20221004.png)
 
-検索フォームに[step functions]を入力し、[Step functions ステートマシン]を選択します。
+入力データを指定して、ワークフローを手動実行する画面が開きます。
 
-![](https://storage.googleapis.com/zenn-user-upload/d4e613654d44-20221005.png)
+以下のJSONを[入力]部分に上書き入力しましょう。
 
-ステートマシンを選択する画面が表示されます、前のステップで作成したステートマシンを指定しましょう。
+```json
+{
+    "detail":{
+      "created": "helloWP"
+    }
+}
+```
 
-![](https://storage.googleapis.com/zenn-user-upload/bf033d882e59-20221005.png)
+入力できれば、[実行の開始]ボタンをクリックします。
 
-実行ロールで、[この特定のリソースについて新しいロールを作成]を選択し、[次へ]を選択します。
+![](https://storage.googleapis.com/zenn-user-upload/e4d7aa038252-20221004.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/16d6e369e0d4-20221005.png)
+[グラフインスペクター]にワークフローが色付きで表示されれば、実行成功です。
 
-タグを設定する画面がありますが、今回は省略し、[次へ]を選びましょう。
+![](https://storage.googleapis.com/zenn-user-upload/f4ebebb67921-20221004.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/29705e718e54-20221005.png)
-
-最後に設定の確認画面が表示されます。
-設定内容を確認して、[ルールの作成]をクリックしましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/a90ce3524e1c-20221005.png)
-
-ルールが作成されました。
-
-![](https://storage.googleapis.com/zenn-user-upload/33d1bcfb2dac-20221005.png)
-
-これでStripeとStepFunctionsのワークフローがつながりました。
-### 3-5: 実際に動かしてみよう
-
-最後に、実際にサブスクリプションを申し込みしてみましょう。
-
-Stripeダッシュボードにて、支払いリンクをコピーし、ブラウザに貼り付けて移動しましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/24c683987f68-20221005.png)
-
-決済フォームが表示されます。
-
-![](https://storage.googleapis.com/zenn-user-upload/2fac4f6334cf-20221005.png)
-
-テスト環境では、以下のカード情報がテスト用途で利用できます。
-
-- カード番号: 4242424242424242
-- 有効期限（月/年）: 本日より未来の年月（12/30など）
-- CVC: 任意の３桁の数字
-
-![](https://storage.googleapis.com/zenn-user-upload/b4fe63bfd030-20221005.png)
-
-カード情報を入力し、申し込みを完了させましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/3a7d2202566b-20221005.png)
-
-申し込み後、StepFunctionsの管理画面にアクセスすると、ワークフローが開始していることが確認できます。
+WordPressが立ち上がるまで、数分かかります。
 
 ![](https://storage.googleapis.com/zenn-user-upload/7dd48c9787fa-20221004.png)
 
+[SUCCESS]が緑色になれば、ワークフロー完了です。
 
-EventBridgeの管理画面では、「イベントを、ターゲットに送れたか否か」などの記録が確認できますので、デバッグに使用しましょう。
+### CloudFormation管理画面から、WordPressにアクセスしよう
 
-![](https://storage.googleapis.com/zenn-user-upload/e8c070c14359-20221005.png)
+作成したサーバーへ実際にアクセスしてみましょう。
+
+まずはCloudFormation管理画面へ移動します。
+
+上部の検索フォームで[cloudformation]と入力し、[CloudFormation]をクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/9a1bb0ff7756-20221004.png)
+
+一覧画面に`LAMP-helloWP`が表示されていますので、クリックしましょう。
+
+今回のサンプルでは、`LAMP-{実行時に設定した名前}`でリソースが作成されます。
+
+![](https://storage.googleapis.com/zenn-user-upload/32cec4ba87e9-20221004.png)
+
+詳細画面で、[出力]タブを選びましょう。`WebsiteURL`にURLが表示されています。
+
+![](https://storage.googleapis.com/zenn-user-upload/9b396f92b880-20221004.png)
+
+クリックすると、WordPressのインストール画面に移動します。
+
+![](https://storage.googleapis.com/zenn-user-upload/9ae7c4613e58-20221004.png)
+
+## おさらい
+
+- AWS StepFunctionsを利用して、サーバーのセットアップなどのワークフローが実現できる
+- ChoiceやWaitを利用して、時間のかかるタスクを待機することができる
+- JSONを利用して、Step Functionsのステートマシン定義をシェアしたり、コード管理できる
+
+
 ## [Advanced] 実運用を目指すための、チャレンジ項目
 
-ワークショップの手順では、以下のケースがサポートできていません。
+AWSが用意しているサンプルのCloudFormationテンプレートを利用して、簡単にWordPressサーバーを立ち上げるワークフローを構築しました。
 
-- プランによって、異なるCloudFormationテンプレートを起動させたい
-- ホスティングプラン以外のサブスクリプションも作成・管理したい
-- コンビニ決済や銀行振込など、「その場で決済が完了しない決済方法」をサポートする場合
+実際にシステムとして利用するには、このステートマシンにさまざまなタスクを追加する必要があります。
 
-以下にアイディアやヒントを用意しましたので、ぜひどのように実現するかをチャレンジしてみてください。
+以下にアイディアやヒントを用意しましたので、時間に余裕がある方はぜひ挑戦して、ご自身のブログやコメントなどでお知らせください。
 
-- Stripeの料金メタデータにCFNのURLを指定し、StepFunctions側でそのURLを利用する
-- EventBridgeのフィルターにて、特定の料金IDを持つイベントのみ受け付けるルールを作る
-- StepFunctionsで、「決済・入金が完了したか否か」を確認するステップを追加する
-- 入金がまだの場合、Wait / Choiceを使って、入金が完了するまで待機し、タイムアウトした場合は解約処理に移る
+- Step FunctionsとS3を利用して、EC2のキーペア作成と共有を自動化しよう
+- Amazon SESやSNSで、顧客または社内にサーバー立ち上げの成功・失敗を通知しよう
+- CloudFormationのテンプレートを別のものや自作品に差し替えてみよう
