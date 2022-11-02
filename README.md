@@ -14,4 +14,3 @@ $ npx zenn preview
 
 `npx zenn preview`を実行すると、 http://localhost:8000 でプレビューができます。
 
-
