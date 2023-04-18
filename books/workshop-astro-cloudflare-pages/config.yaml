@@ -7,3 +7,4 @@ price: 0 # 有料の場合200〜5000
 chapters:
   - step1
   - step2
+  - step3
