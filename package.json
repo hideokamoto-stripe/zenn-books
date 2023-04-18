@@ -1,0 +1,23 @@
+{
+  "name": "zenn-books",
+  "version": "1.0.0",
+  "description": "Stripeの開発ワークショップ資料の元データを管理しています。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hideokamoto-stripe/zenn-books.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hideokamoto-stripe/zenn-books/issues"
+  },
+  "homepage": "https://github.com/hideokamoto-stripe/zenn-books#readme",
+  "devDependencies": {
+    "zenn-cli": "^0.1.142"
+  }
+}
