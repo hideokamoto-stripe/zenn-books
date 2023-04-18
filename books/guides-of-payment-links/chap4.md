@@ -1,11 +1,16 @@
 ---
-title: "Payment Linksでの販売促進・効果測定"
+title: "本番環境で利用するための準備をしよう"
 ---
 
 
 
-## クーポンコードを発行する
+### ブランドロゴなどを設定しよう
 
-## Google Analyticsと連携する
 
-## アップセルやクロスセルを提案する
+### 特商法に基づく表示や返品ポリシーなどを用意しよう
+
+https://qiita.com/hideokamoto/items/382956c50973c7e1fe7b
+https://qiita.com/hideokamoto/items/9ca5845a4f68dae808fd
+### アプリやメールで通知を受け取ろう
+
+### 本番環境の利用申請を出そう
