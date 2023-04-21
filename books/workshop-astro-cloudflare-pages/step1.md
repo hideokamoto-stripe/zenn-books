@@ -1,13 +1,30 @@
 ---
-title: "Code&command snippets (Astro init -> CF Pages deploy)"
+title: "Astroを利用したアプリのセットアップ"
 ---
 
+まずはサブスクリプション申し込みページを作るためのサイトを用意しましょう。
 
-## Setup
+ここでは、AstroというJSフレームワークを利用します。
 
-```bash
-% npm create astro@latest
-```
+https://astro.build/
+
+## Astroとは？
+
+Astroは、ウェブサイトなどを高速で配信するための、オールインワン型JSフレームワークです。
+
+ReactにおけるNext.jsや、VueにおけるNuxtのようなものだと考えて頂ければよいかなと思います。
+
+UIフレームワークに依存せず利用できるため、ReactやVue, SvelteなどのUIフレームワークをAstroに持ち込む・併用することも可能です。
+
+また、CloudflareやDenoなどのエッジコンピューティングでの配信に対応しています。
+
+## Astroでアプリをセットアップしよう
+
+Astroで新しくアプリを立ち上げるには、`npm create astro@latest`コマンドを利用します。
+
+ターミナルで`npm create astro@latest`コマンドを実行しましょう。
+
+すると、[HusonAI](https://houston.astro.build/)というGPT-3ベースのAIが、アプリの設定についていくつか質問してきます。
 
 ```bash
 ╭─────╮  Houston:
@@ -15,13 +32,27 @@ title: "Code&command snippets (Astro init -> CF Pages deploy)"
 ╰─────╯
 
  astro   v2.3.0 Launch sequence initiated.
-```
 
 ```
+
+### アプリのディレクトリ名を指定する
+
+まずはじめに、アプリのディレクトリ名を決める必要があります。
+
+```bash
+   dir   Where should we create your new project? 
+```
+
+ここでは、`ws-stripe-cloudflare-astro`と入力しましょう。
+
+```bash
    dir   Where should we create your new project?
-         astro-stripe-cf-pages
+         ws-stripe-cloudflare-astro 
 ```
 
+### テンプレートを選択する
+
+ユースケースなどを簡単に学ぶことができるように、テンプレートが用意されています。
 
 ```
   tmpl   How would you like to start your new project?
@@ -30,150 +61,95 @@ title: "Code&command snippets (Astro init -> CF Pages deploy)"
          ○ Empty 
 ```
 
-```
+ここでは、`Include sample files (recommended)`を選びましょう。
+
+[Enter]キーを入力すると、ファイルのコピーが始まります。
+
+```bash
  ██████  Template copying...
 ```
 
-```
+テンプレートの`package.json`に記載されたライブラリを追加するか聞かれます。
+`Yes`を選択して、インストールを始めましょう。
+
+```bash
   deps   Install dependencies? (recommended)
          ● Yes  ○ No 
 ```
 
+### TypeScriptの設定を行う
 
+インストールが完了すると、TypeScriptで開発するか否かを聞かれます。
+
+```bash
+   ts   Do you plan to write TypeScript?
+         ● Yes  ○ No 
 ```
-  next   Liftoff confirmed. Explore your project!
 
-         Enter your project directory using cd ./first-astro-site 
-         Run npm run dev to start the dev server. CTRL+C to stop.
-         Add frameworks like react or tailwind using astro add.
+`Yes`を選択し、続いて`tsconfig.json`の設定をプリセットから選びます。
 
-         Stuck? Join us at https://astro.build/chat
+```bash
+   use   How strict should TypeScript be?
+❯   Strict - (recommended)
+    Strictest
+    Relaxed
+    Help me choose
+```
+
+資料作成時には`Strict`を選択しましたが、それ以外でも進行上問題ありません。
+
+### Gitリポジトリを作成しよう
+
+最後にGitリポジトリを作成しましょう。
+
+```bash
+   git   Initialize a new git repository? (optional)
+         ● Yes  ○ No 
+```
+
+### アプリのディレクトリに移動しよう
+
+次のようなメッセージが表示されれば、セットアップ完了です。
+
+```bash
+ Enter your project directory using cd ./ws-stripe-cloudflare-astro 
+ Run npm run dev to start the dev server. CTRL+C to stop.
+ Add frameworks like react or tailwind using astro add.
+
+ Stuck? Join us at https://astro.build/chat
 
 ╭─────╮  Houston:
-│ ◠ ◡ ◠  Good luck out there, astronaut!
+│ ◠ ◡ ◠  Good luck out there, astronaut! 🚀
 ╰─────╯
 ```
 
-
-## Run Astro App
-```
-$ npm run dev
-warning package.json: No license field
-$ astro dev
-  🚀  astro  v2.3.0 started in 26ms
-  
-  ┃ Local    http://127.0.0.1:3000/
-  ┃ Network  use --host to expose
-  
-```
-
-![](https://storage.googleapis.com/zenn-user-upload/dcbfc315c8ab-20230418.png)
-
-## Add Cloudflare 
-
-If you want to use Astro for Static Site, don't do this step!
+次のコマンドを実行すると、サンプルアプリが立ち上がります。
 
 ```bash
-npx astro add cloudflare
-
-  Astro will run the following command:
-  If you skip this step, you can always run it yourself later
-
- ╭────────────────────────────────────────────╮
- │ npm i @astrojs/cloudflare astro@^2.1.4     │
- ╰────────────────────────────────────────────╯
-
-? Continue? › (Y/n)
+% cd ws-stripe-cloudflare-astro
+% npm run dev
 ```
 
-```
+![](https://storage.googleapis.com/zenn-user-upload/8252fd4fcf13-20230421.png)
 
-  Astro will make the following changes to your config file:
+## Astroプロジェクトを、IDEで開こう
 
- ╭ astro.config.mjs ──────────────────────────────╮
- │ import { defineConfig } from 'astro/config';   │
- │                                                │
- │ import cloudflare from "@astrojs/cloudflare";  │
- │                                                │
- │ // https://astro.build/config                  │
- │ export default defineConfig({                  │
- │   output: "server",                            │
- │   adapter: cloudflare()                        │
- │ });                                            │
- ╰────────────────────────────────────────────────╯
+VSCodeなどのIDEで、`ws-stripe-cloudflare-astro`ディレクトリを開きましょう。
 
-  For complete deployment options, visit
-  https://docs.astro.build/en/guides/deploy/
+![](https://storage.googleapis.com/zenn-user-upload/e473929e06ee-20230421.png)
 
-? Continue? › (Y/n)
-```
+### [Optional] VSCode拡張を追加する
+Astroではページを`.astro`ファイルで保存します。
 
-```
-✔ Continue? … yes
-  
-   success  Added the following integration to your project:
-  - @astrojs/cloudflare
-```
+`.astro`拡張子をサポートしていないIDEでは、拡張機能を追加することをお勧めします。
+
+https://marketplace.visualstudio.com/items?itemName=astro-build.astro-vscode
 
 
-## Deploy to Cloudflare
+## おさらい
 
-@TODO Setupステップ省略
+- AstroはUIライブラリ・FWに依存しないJSフレームワーク
+- 対話形式でプロジェクトがセットアップできる
+- `.astro`をサポートするIDE拡張機能があると便利
 
-
-### init project
-
-```bash
-$  npx wrangler pages project create ws-astro-stripe
-? Enter the production branch name: › main
-```
-`main`は「今作業しているブランチ」になる（はず）
-
-```
-✨ Successfully created the 'ws-astro-stripe' project. It will be available at https://ws-astro-stripe.pages.dev/ once you create your first deployment.
-To deploy a folder of assets, run 'wrangler pages publish [directory]'.
-```
-
-![](https://storage.googleapis.com/zenn-user-upload/2cba2360149e-20230418.png)
-
-### Build Astro app
-
-```
-$ npm run build
-
-> astro-stripe-cf-pages@0.0.1 build
-> astro build
-
-14:35:40 [content] No content directory found. Skipping type generation.
-14:35:40 [build] output target: server
-14:35:40 [build] deploy adapter: @astrojs/cloudflare
-14:35:40 [build] Collecting build info...
-14:35:40 [build] Completed in 35ms.
-14:35:40 [build] Building server entrypoints...
-14:35:41 [build] Completed in 1.01s.
-
- finalizing server assets 
-
-14:35:41 [build] Rearranging server assets...
-14:35:41 [build] Server built in 1.10s
-14:35:41 [build] Complete!
-```
-
-### Deploy it!
-
-```
-$  npx wrangler pages publish ./dist
-▲ [WARNING] Warning: Your working directory is a git repo and has uncommitted changes
-
-  To silence this warning, pass in --commit-dirty=true
-
-
-🌎  Uploading... (2/2)
-
-✨ Success! Uploaded 2 files (1.54 sec)
-
-✨ Compiled Worker successfully
-✨ Uploading Worker bundle
-✨ Uploading _routes.json
-✨ Deployment complete! Take a peek over at https://d89f694f.ws-astro-stripe.pages.dev
-```
+次のステップでは、セットアップしたアプリをCloudflare Pageにデプロイします。
