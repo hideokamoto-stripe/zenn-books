@@ -3,7 +3,7 @@ title: "[Cloudflare & Stripe入門] Cloudflare WorkersとStripeで、オリジ�
 emoji: "🚀"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["cloudflare", "stripe", "javascript", "typescript"]
-published: false
+published: true
 ---
 
 「Cloudflare Workers」を利用すると、サーバーレスなアプリケーションをCloudflareのデータセンターにデプロイできます。
