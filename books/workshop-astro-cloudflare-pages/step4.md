@@ -164,6 +164,55 @@ import Card from '../components/Card.astro';
 
 ![](https://storage.googleapis.com/zenn-user-upload/3505de873400-20230425.png)
 
+## 顧客向けの請求マイページURLを設定しよう
+
+続いて、サブスクリプション申し込み済みのユーザー向けに請求マイページを用意しましょう。
+
+Stripeダッシュボードの、料金表コードスニペットを取得したページに再度アクセスします。
+
+![](https://storage.googleapis.com/zenn-user-upload/72709486aa04-20230425.png)
+
+ページを下にスクロールして、[カスタマーポータル]セクションに移動しましょう。
+
+`https://billing.stripe.com`から始まるURLが表示されていますので、コピーします。
+
+![](https://storage.googleapis.com/zenn-user-upload/65350ff7d7a6-20230425.png)
+
+Astroのアプリで、このURLに移動するリンクを追加すれば、マイページの設定は完了です。
+
+```html:src/pages/index.astro
+		</stripe-pricing-table>
++		<a
++			href="https://billing.stripe.com/p/login/test_xxxx"
++			target="_blank"
++			rel="noreferrer noopener"
++		>マイページ (メール認証)</a>
+	</main>
+</Layout>
+```
+
+追加したリンクをクリックすると、顧客マイページへのログイン画面が開きます。
+
+![](https://storage.googleapis.com/zenn-user-upload/4dc5e33d88ea-20230425.png)
+
+テスト環境では、**「Stripeダッシュボードにログインできるメールアドレス」**かつ**Stripeアカウントに、Customerデータが作成されている**場合のみ利用できます。
+
+料金表を使ったサブスクリプション申し込みのテストを行う際、１度は **「Stripeダッシュボードにログインできるメールアドレス」** で申し込みを行いましょう。
+
+:::details [Appendix]カスタマーポータルで顧客が操作できる内容を変更する
+[コピー]ボタン横にある歯車ボタンをクリックすると、カスタマーポータルの設定画面が開きます。
+
+ここでは、カスタマーポータルにでユーザーができる操作を指定できます。
+
+![](https://storage.googleapis.com/zenn-user-upload/bd700feb63c3-20230425.png)
+
+「キャンセル操作はさせてもよいが、プラン変更はさせたくない」や、
+「請求履歴や領収書PDFのダウンロード・決済情報の更新だけできるようにしたい」など、
+要件に応じた設定のカスタマイズを行いましょう。
+
+:::
+
+
 ## テスト環境と本番環境を切り替えれるようにする
 
 料金表をサービスに組み込むには、本番環境とテスト環境で読み込む料金表を変更できる必要があります。
@@ -179,6 +228,14 @@ PUBLIC_STRIPE_PUBLISHABLE_API_KEY=<publishable-keyの値>
 PUBLIC_STRIPE_PRICING_TABLE_ID=<pricing-table-idの値>
 ```
 
+また、`src/pages/index.astro`に追加している、「カスタマーポータルのURL」も設定しましょう。
+
+```diff:.env
+PUBLIC_STRIPE_PUBLISHABLE_API_KEY=<publishable-keyの値>
+PUBLIC_STRIPE_PRICING_TABLE_ID=<pricing-table-idの値>
++PUBLIC_STIPE_CUSTOMER_PORTAL_URL=<カスタマーポータルのURL>
+```
+
 続いて、`src/pages/index.astro`で環境変数を読み込むようにします。
 
 ```diff html:src/pages/index.astro
@@ -187,7 +244,8 @@ import Layout from '../layouts/Layout.astro';
 import Card from '../components/Card.astro';
 +const {
 +	PUBLIC_STRIPE_PUBLISHABLE_API_KEY,
-+	PUBLIC_STRIPE_PRICING_TABLE_ID
++	PUBLIC_STRIPE_PRICING_TABLE_ID,
++	PUBLIC_STIPE_CUSTOMER_PORTAL_URL
 +} = import.meta.env;
 
 const now = new Date()
@@ -202,6 +260,12 @@ const now = new Date()
 +			publishable-key={PUBLIC_STRIPE_PUBLISHABLE_API_KEY}
 		>
 		</stripe-pricing-table>
+		<a
+-			href="https://billing.stripe.com/p/login/test_xxxx"
+-			href={PUBLIC_STIPE_CUSTOMER_PORTAL_URL}
+			target="_blank"
+			rel="noreferrer noopener"
+		>マイページ (メール認証)</a>
 	</main>
 </Layout>
 
@@ -229,7 +293,7 @@ Cloudflareダッシュボード（ https://dash.cloudflare.com/ ）にログイ�
 
 [Production]の[Add variables]ボタンをクリックすると、環境変数を設定する画面が開きます。
 
-`PUBLIC_STRIPE_PUBLISHABLE_API_KEY`と`PUBLIC_STRIPE_PRICING_TABLE_ID`を追加しましょう。
+`PUBLIC_STRIPE_PUBLISHABLE_API_KEY`と`PUBLIC_STRIPE_PRICING_TABLE_ID`、そして`PUBLIC_STIPE_CUSTOMER_PORTAL_URL`を追加しましょう。
 
 ![](https://storage.googleapis.com/zenn-user-upload/ffa2b7d7d421-20230425.png)
 
