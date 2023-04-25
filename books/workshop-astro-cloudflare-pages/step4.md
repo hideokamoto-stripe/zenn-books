@@ -1,48 +1,262 @@
 ---
-title: "Code&command snippets (Webhook)"
+title: "Stripeで、「料金表」を作成して埋め込もう"
 ---
 
-**src/pages/api/webhook.ts**
+登録したサブスクリプション商品を、アプリから申し込めるようにしましょう。
 
-```ts
-import { APIRoute } from "astro";
-import Stripe from "stripe";
+まずは、料金表のJSスニペットを埋め込む方法を試します。
 
-const STRIPE_SECRET_API_KEY = import.meta.env.STRIPE_SECRET_API_KEY;
-const STRIPE_WEBHOOK_SECRET = import.meta.env.STRIPE_WEBHOOK_SECRET;
+## Stripeダッシュボードで、料金表を作成しよう
 
-const stripe = new Stripe(STRIPE_SECRET_API_KEY, {
-	apiVersion: "2022-11-15"
-});
+2022年のアップデートで、「料金表」をサイトに埋め込むコードスニペットが作れるようになりました。
 
-export const post: APIRoute = async (context) => {
-    const { request } = context;
-    const signature = request.headers.get("stripe-signature");
-    try {
-        const body = await request.arrayBuffer();
-        const event = stripe.webhooks.constructEvent(
-            Buffer.from(body),
-            signature,
-            STRIPE_WEBHOOK_SECRET
-        );
-        return {
-            body: JSON.stringify({
-                message: "ok",
-            })
-        };
-      } catch (err) {
-        const errorMessage = `⚠️  Webhook signature verification failed. ${err.message}`
-        console.log(errorMessage);
-        return new Response(errorMessage, {
-            status: 400
-        })
-      }
-}
+![](https://storage.googleapis.com/zenn-user-upload/60ec6ac497b7-20230424.png)
+
+ダッシュボードの[商品 > 料金表]に移動しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/b2689ef63f3b-20230424.png)
+
+[料金表を作成する]をクリックすると、料金表の作成画面が開きます。
+
+![](https://storage.googleapis.com/zenn-user-upload/e1c59611b83b-20230424.png)
+
+### 商品を料金表に追加する
+[テストの商品を見つけるまたは追加する]のフォームをクリックして、商品を追加しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/efb21876529c-20230424.png)
+
+追加すると、右側のプレビュー画面にも商品が表示されます。
+
+![](https://storage.googleapis.com/zenn-user-upload/23587d3a055b-20230424.png)
+
+[別の商品を追加]をクリックして、複数の商品を登録しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/b654a53d8be3-20230424.png)
+
+:::details [Appendix]「最上位プランはお問い合わせください」を実現する方法
+料金表に決済画面ではなく、任意のフォームやページへのリンクを追加できます。
+[カスタムの行動換気ボタンで製品を追加]をクリックして、リンクURLを設定しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/6dce0a1a398f-20230424.png)
+:::
+
+### 料金表の見た目をカスタマイズしよう
+
+料金表は、Payment Links同様いくつかのカスタマイズ機能が用意されています。
+
+[表示設定]から、言語やボタン・背景の配色などを変更しましょう。
+
+#### 言語を変更する
+
+まずは[言語]を選択しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/0ae6af449579-20230425.png)
+
+テキストが入力できるセレクトボックスが表示されます。
+
+[日本語]を入力して、日本語を設定しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/b195803be9c1-20230425.png)
+
+[プレビュー]に表示されている料金表のボタンテキストなどが、日本語に変わりました。
+
+![](https://storage.googleapis.com/zenn-user-upload/ef67f858b826-20230425.png)
+
+#### おすすめ商品を強調表示する
+
+複数の料金を表示する場合、お勧めしたい商品を強調表示できます。
+
+[商品を強調表示]をオンにします。
+![](https://storage.googleapis.com/zenn-user-upload/e1881d9fad18-20230425.png)
+
+[お勧めしたい商品]と、[表示するラベル名]を選べます。
+
+![](https://storage.googleapis.com/zenn-user-upload/23c7c65ebf24-20230425.png)
+
+右側のプレビュー画面で、選択した商品が強調表示されていることが確認できます。
+
+![](https://storage.googleapis.com/zenn-user-upload/c9534f683e95-20230425.png)
+
+ラベルは、2023/4時点で[最も人気][最もお得][おすすめ]の３つから選べます。
+![](https://storage.googleapis.com/zenn-user-upload/59a384114833-20230425.png)
+
+## 決済方法の設定を行おう
+
+料金表に表示したい商品や見た目の設定が終われば、[続行]ボタンをクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/bae7f5819c8b-20230425.png)
+
+料金表のボタンをクリックした後に表示される、決済フォームの設定画面に移動します。
+
+![](https://storage.googleapis.com/zenn-user-upload/96a690763c08-20230425.png)
+
+ここでは、2023/04時点で次のようなカスタマイズができます。
+
+- プロモーションコード（クーポン）の適用
+- 納税者番号（日本では法人番号）の入力
+- 注文数量の変更
+- 請求先住所・発送先住所フォームの追加
+- 電話番号フォームの追加
+- カスタムフィールドの追加（２つまで）
+- [Stripe Tax利用時] 消費税の自動計算
+
+自由に設定して構いません。
+
+もしどのように設定すれば良いか悩まれた場合は、下のスクリーンショットを参考に設定しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/d523e1ad73ca-20230425.png)
+
+また、支払い完了後のThanksページの設定も行えます。
+
+![](https://storage.googleapis.com/zenn-user-upload/c3f2507155de-20230425.png)
+
+今回は[確認ページを表示する]を選択しましょう。
+
+[続行]ボタンをクリックして、次のステップに移りましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/ca7a437411f5-20230425.png)
+
+## 顧客マイページの設定を行おう
+
+サブスクリプションビジネスでは、クレジットカード情報の更新フォームやプラン変更・キャンセル画面、請求履歴を表示するページなどの機能が欠かせません。
+
+次のステップでは、このようなサブスクリプション申し込み情報を管理する[カスタマーポータル]を作成します。
+
+![](https://storage.googleapis.com/zenn-user-upload/839cb849c930-20230425.png)
+
+このステップでは、「顧客が他のプランに変更できるようにするか」と、「どの商品・料金への変更を許可するか」を設定できます。
+
+デフォルトでは、料金表に追加した商品・料金が選択されています。
+
+![](https://storage.googleapis.com/zenn-user-upload/abd62bfe78b1-20230425.png)
+
+今回のワークショップでは、設定を変更せずに[完了]をクリックしましょう。
+
+## コードスニペットを取得しよう
+
+料金表の作成に成功すると、サイトに埋め込むためのコードスニペットが生成されます。
+
+![](https://storage.googleapis.com/zenn-user-upload/dbc44524c7fb-20230425.png)
+
+表示されたスニペットをコピーして、`src/pages/index.astro`に貼り付けましょう。
+
+```diff html:src/pages/index.astro
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+---
+
+<Layout title="Welcome to Astro.">
+	<main>
++		<script async src="https://js.stripe.com/v3/pricing-table.js"></script>
++		<stripe-pricing-table
++			pricing-table-id="prctbl_xxxx"
++			publishable-key="pk_test_xxx"
++		>
++		</stripe-pricing-table>
+	</main>
+</Layout>
 ```
 
-## Cloudflareとの連携アイディア
+`npm run dev`でアプリを起動し、http://localhost:3000 にアクセスしましょう。
 
-・KVに「注文速報DB」を作る
-・決済に成功したら、商品IDと売れた時間をKVに書き込み
-・別途APIを立てて、KVからListで注文データを取得
-・「最近売れた商品」画面を作る
+プレビューに表示されていた料金表が表示されていれば、埋め込み完了です。
+
+![](https://storage.googleapis.com/zenn-user-upload/3505de873400-20230425.png)
+
+## テスト環境と本番環境を切り替えれるようにする
+
+料金表をサービスに組み込むには、本番環境とテスト環境で読み込む料金表を変更できる必要があります。
+
+そこで環境変数を利用して、料金表を切り替えれるようにしましょう。
+
+料金表のコードスニペットから、`pricing-table-id`と`publishable-key`の２つをコピーしましょう。
+
+`.env`ファイルを`package.json`などがあるディレクトリに作成し、次のように設定します。
+
+```env:.env
+PUBLIC_STRIPE_PUBLISHABLE_API_KEY=<publishable-keyの値>
+PUBLIC_STRIPE_PRICING_TABLE_ID=<pricing-table-idの値>
+```
+
+続いて、`src/pages/index.astro`で環境変数を読み込むようにします。
+
+```diff html:src/pages/index.astro
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
++const {
++	PUBLIC_STRIPE_PUBLISHABLE_API_KEY,
++	PUBLIC_STRIPE_PRICING_TABLE_ID
++} = import.meta.env;
+
+const now = new Date()
+---
+<Layout title="Welcome to Astro.">
+	<main>
+		<script async src="https://js.stripe.com/v3/pricing-table.js"></script>
+		<stripe-pricing-table
+-			pricing-table-id="prctbl_xxxx"
+-			publishable-key="pk_test_xxx"
++			pricing-table-id={PUBLIC_STRIPE_PRICING_TABLE_ID}
++			publishable-key={PUBLIC_STRIPE_PUBLISHABLE_API_KEY}
+		>
+		</stripe-pricing-table>
+	</main>
+</Layout>
+
+```
+
+この状態で、`npm run dev`を再度実行しましょう。
+
+料金表の表示が変わらなければ、切り替え成功です。
+
+## Cloudflare Pagesに環境変数を保存する
+
+作成した料金表を本番環境で動作させるため、Cloudflare側でも設定を行いましょう。
+
+Cloudflareダッシュボード（ https://dash.cloudflare.com/ ）にログインしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/389057601dd1-20230425.png)
+
+ワークショップで作成したPagesプロジェクトを開きます。
+
+![](https://storage.googleapis.com/zenn-user-upload/b045c9785029-20230425.png)
+
+[Settings]タブの[Environment Variables]に移動します。
+
+![](https://storage.googleapis.com/zenn-user-upload/20ad607c75bc-20230425.png)
+
+[Production]の[Add variables]ボタンをクリックすると、環境変数を設定する画面が開きます。
+
+`PUBLIC_STRIPE_PUBLISHABLE_API_KEY`と`PUBLIC_STRIPE_PRICING_TABLE_ID`を追加しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/ffa2b7d7d421-20230425.png)
+
+:::message
+実運用では、`Production`にはStripeの本番環境のデータを登録します。
+また、プレビュー環境も用意したい場合は、`Preview`側にStripeのテスト環境のデータを保存しましょう。
+:::
+
+### 変更を、Cloudflareにデプロイする
+
+Cloudflare Pages上でStripeの料金表を表示する準備ができました。
+
+Astroでのビルドと、Wranglerを使ったデプロイを行いましょう。
+
+```bash
+% npm run build
+% wrangler pages publish ./dist
+```
+
+ビルドとデプロイ、そして環境変数の設定が完了していれば、Cloudflare Pages側のURLでも料金表が表示されます。
+
+![](https://storage.googleapis.com/zenn-user-upload/dfb20682cb80-20230425.png)
+
+## おさらい
+
+- Stripeの料金表で、簡単にSaaSの料金表を作成・埋め込みできる
+- 実運用時には、料金表IDの公開可能APIキーを環境変数から読み込ませよう
+- Cloudflare Pagesの環境変数は、ダッシュボード上から登録しよう
+
+次のステップでは、サブスクリプションの申し込みを受け取るREST APIを作成します。
