@@ -1,0 +1,13 @@
+title: "Stripe Connect fundamentals Series"
+summary: "dev.to/stripe のStripe Connect fundamentals Seriesを日本語化しました"
+topics: ['stripe']
+published: false
+price: 0 # 有料の場合200〜5000
+# 本に含めるチャプターを順番に並べましょう
+chapters:
+  - intro
+  - episode1
+  - episode2
+  - episode3
+  - episode4
+  - episode5
