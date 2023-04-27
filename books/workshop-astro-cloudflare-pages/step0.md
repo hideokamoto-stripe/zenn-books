@@ -119,7 +119,7 @@ https://creativecommons.org/licenses/by/4.0/deed.ja
 
 なお、差し支えなければ、どんなイベントで利用したかについてを、以下のページに共有をお願いします。
 
-[TBD]
+https://zenn.dev/stripe/scraps/302bf0e0476139
 
 今後の資料作成の励みになりますので、ご協力いただけますと幸いです。
 
