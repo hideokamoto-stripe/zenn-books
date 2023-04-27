@@ -1,7 +1,7 @@
 title: "[Stripe x Cloudflareワークショップ] AstroとStripe・Cloudflare Pagesで作る簡易ECサイト"
-summary: ""
-topics: []
-published: false
+summary: "AstroとCloudflareそしてStripeを利用して、サブスクリプションの申し込みページを構築します。"
+topics: ['stripe']
+published: true
 price: 0 # 有料の場合200〜5000
 # 本に含めるチャプターを順番に並べましょう
 chapters:
