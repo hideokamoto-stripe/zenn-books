@@ -1,0 +1,16 @@
+title: ""
+summary: ""
+topics: []
+published: false
+price: 0 # 有料の場合200〜5000
+# 本に含めるチャプターを順番に並べましょう
+chapters:
+  - step0
+  - step1
+  - step2
+  - step3
+  - step4
+  - step4-1
+  - step5
+  - step6
+  - stepx
