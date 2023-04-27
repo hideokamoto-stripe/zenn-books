@@ -1,4 +1,4 @@
-title: "[Stripe x Cloudflareワークショップ] AstroとStripe・Cloudflare Pagesで、サブスクリプション申し込みページを作ろう"
+title: "[Stripe x Cloudflareワークショップ] Astroを使って、サブスクリプション申し込みページを作ろう"
 summary: "AstroとCloudflareそしてStripeを利用して、サブスクリプションの申し込みページを構築します。"
 topics: ['stripe']
 published: true
