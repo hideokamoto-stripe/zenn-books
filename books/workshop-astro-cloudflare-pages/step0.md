@@ -123,3 +123,4 @@ https://creativecommons.org/licenses/by/4.0/deed.ja
 [TBD]
 
 今後の資料作成の励みになりますので、ご協力いただけますと幸いです。
+
