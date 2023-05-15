@@ -91,44 +91,80 @@ Stripeが用意するオンボーディングUIを利用することで、出店
 
 したがって、エンジニアのリソースに余裕がある場合以外では、[Connect Onboarding](https://stripe.com/jp/connect/onboarding)を利用しましょう。
 
+### コンプライアンス要件の変化に自動で対応する
 
-### Automatic updates for new compliance requirements
-Global compliance requirements and rules do change over time. For Standard and Express accounts, Stripe will proactively reach out and collect information about your accounts whenever requirements change.
+グローバルなルールやコンプライアンス要件は、時間の経過とともに進化し続けます。
 
-If you’re using Custom account types with a bespoke onboarding flow and haven’t integrated with Connect Onboarding, you’ll need to invest development resources to make updates as compliance requirements change over time. However, if you use Connect Onboarding for Custom accounts, you can easily collect onboarding and verification information from your users and save yourself the hassle of constantly updating your onboarding form. Plus, Connect Onboarding can help you stay up-to-date with the latest compliance requirements without any extra effort on your part. Just make sure to follow best practices for communicating changes to your users, as outlined in the guide for Custom accounts.
+StandardアカウントまたはExpressアカウントでは、Stripeが追加の提出が必要になったアカウント情報を積極的に収集します。
 
-Integration effort is one the most heavily weighted factors when deciding which Stripe Connect account type to choose. Most startup and growth companies have the bandwidth and resources to implement and maintain Standard and Express accounts. If you don’t have a team of engineers to dedicate significant bandwidth to maintaining a Custom integration, I recommend Standard or Express.
+Customアカウントのうち、独自のオンボーディングフローを構築していて、[Connect Onboarding](https://stripe.com/jp/connect/onboarding)を利用していない場合には、ルールやコンプライアンス要件が変化する度にフローの変更作業が必要となります。
 
-## Operational responsibilities
-Another important consideration is who handles the operational responsibility day to day. For instance, are you the platform liable for fraud and disputes related to payments for a connected account? What type of dashboard can the connected account access to view payments, issue refunds, handle disputes, and update their information? Who is responsible for supporting connected account users when questions arise? Some of the following details differ depending on the charge type (direct vs destination) which we’ll cover in another article. Just know that one charge type may have different operational requirements than another charge type.
+ただし、[Connect Onboarding](https://stripe.com/jp/connect/onboarding)を利用することで、オンボーディングや認証情報の収集と、フォームの更新作業を自動化することができます。
+また、[Connect Onboarding](https://stripe.com/jp/connect/onboarding)を使っている場合、コンプライアンス要件の変化にも追加の作業を必要とせずに対応できるようになります。
 
-### Fraud and dispute liability
-If you’re trying to decide between Standard and Express accounts, this is likely the tie breaker.
+コンプライアンス要件の変化に伴う変更をユーザーに伝える方法については、Customアカウント向けのベストプラクティスを参考にしてください。
 
-For Standard accounts, the connected account owner (your user) is responsible for dealing with fraud and disputes*. For Express and Custom accounts, you as the platform are ultimately responsible for dealing with fraud and disputes.
+https://support.stripe.com/questions/best-practices-for-connect-platforms-communicating-updates-to-verification-requirements-with-custom-connected-accounts?locale=ja-JP
 
-Understanding the dispute process and how to handle fraud is part of any online business. Standard accounts are more suited for experienced online businesses, whereas Express accounts are ideal for businesses at any level of experience.
+「組み込みに必要な工数」は、Stripe Connectのアカウントタイプを選択する際の重要な最も要素の1つです。
+ほとんどのスタートアップや成長企業においては、実装と運用保守のためのリソースはあまり多くありません。
+Customアカウントの実装および運用保守に、多くの開発リソースを用意できる場合を除いて、StandardまたはExpressを選ぶことをお勧めします。
 
-*this may shift depending on the charge type used.
+## 運用上の責任
+もう1つの重要な考慮事項は、「日々の運用責任を誰が受け持つか」です。
+例えば、このような運用事項を考慮する必要があります。
 
-### Dashboard access
-Standard accounts are conventional Stripe accounts where the account holder (your user) is able to log in to the Dashboard and can process charges on their own. If you want to obfuscate the relationship between the connected account holder and their end user for any reason, Standard is likely not a good fit.
+- プラットフォームは連結アカウントで発生した支払いに対する不正利用や不審請求の申立てに責任を負いますか？
+- 連結アカウントのユーザーは、どのダッシュボードを利用して、支払いの表示や払い戻し処理、不審請求の申立ての対応そしてアカウント情報の更新などを行いますか？
+- 連結アカウントのユーザーは、誰に対して問題の解決などのサポートを求めることができますか？
+
+一部のケースでは、連結アカウントへの支払い方法（ダイレクト支払い・デスティネーション支払い）によって異なります。
+支払い方法の違いについては、別の記事にて紹介しますが、支払い方法によって動作要件が変わることがある点にも注意が必要です。
+
+### 不正利用や不審請求の申立てに対する責任
+
+StandardアカウントかExpressアカウントかで悩んでいる場合には、最終的な決め手になるかもしれません。
+
+Standardアカウントでダイレクト支払いを利用している場合は、連結アカウントのユーザーが不正利用や不審請求の申立てに対応する責任を負います。
+ExpressアカウントやCustomアカウントでは、推奨された支払いタイプ（デスティネーション支払い）を利用する場合はプラットフォームを提供する側が最終的な責任を負います。
+
+不審請求申立てへの対応プロセスや不正利用への対処方法を理解することも、オンラインビジネスの重要な要素です。
+Standardアカウントでは連結アカウントユーザーにも対応のための知識が必要ですが、Expressアカウントではプラットフォーム側に任せることができます。
+
+https://stripe.com/docs/connect/charges#%E4%B8%8D%E5%AF%A9%E8%AB%8B%E6%B1%82%E3%81%AE%E7%94%B3%E8%AB%8B%E3%81%A8%E3%83%81%E3%83%A3%E3%83%BC%E3%82%B8%E3%83%90%E3%83%83%E3%82%AF
+
+### ダッシュボードへのアクセス
+
+Standardアカウントでは、連結アカウントのユーザーがStripeダッシュボードにログインして請求を処理できます。
+何らかの理由で、連結アカウントのユーザーとエンドユーザーの関係を難読化したい場合には、Standardアカウント以外を選ぶ必要があります。
 
 ![](https://res.cloudinary.com/practicaldev/image/fetch/s--OHZCF_a4--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_880/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/w1v1s4erk7nntp3q1gsu.png)
 
-Express accounts can only use the Express Dashboard, a simplified Stripe-hosted interface. From the Express Dashboard, your users can view their available balance, see upcoming payouts, and track their earnings in real time. The Express Dashboard does not have all of the same features as the Standard Dashboard.
+Expressアカウントでは、Stripeが提供する「Expressダッシュボード」を連結アカウントのユーザーに提供します。
+Expressダッシュボードから、連結アカウントのユーザーはアカウント残高や今後の入金予定、支払い・収益の追跡などができます。
+ただし、Expressダッシュボードには、通常のStripeダッシュボードと利用できる機能が同じではありません。
 
 ![](https://res.cloudinary.com/practicaldev/image/fetch/s--JYd70shY--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_880/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/3dkajjto20x74nuh6eab.png)
 
-Custom accounts do not have access to a Stripe-hosted dashboard. You’ll need to build custom interfaces into your application for your users to handle any operational tasks related to running their business.
+Customアカウントを利用すると、連結アカウントのユーザーはStripeがホストするダッシュボードを利用できません。
+ユーザーがビジネスの運営に関連するタスクを処理できるように、プラットフォーム側で機能やUIを提供しましょう。
 
-### User support
-All support questions about a Custom connected account are handled by you, the platform. For Standard and Express accounts, some questions can be answered by Stripe and others will be handled by the platform. For instance, as identity verification requirements shift and change, Stripe will proactively reach out to your users to ensure the information on file stays compliant with local regulations.
+### ユーザーサポート
 
-## Recommendations
-Absent a compelling reason for a bespoke integration and lots of resources to build and maintain a Custom Connect integration, I would default to either Standard or Express. Assuming the platform I’m building is open to handling fraud and disputes, the platform decision between Standard and Express comes down to the relationship I expect users to have with end customers. Will my users, the owners of the connected accounts, need a long standing relationship with their customers or will their relationship be one-off, and transactional in nature? If so, do I expect my customer base to be savvy enough (or teachable enough) to handle fraud and disputes and trusted with the ability to charge the end customer manually. If I’m working with online business savvy folks who maintain long-running relationships with their end customers, I’d choose Standard. If I’m working with any internet user who has a one-off relationship with end customers or if I want to prevent them from charging end customers, then I’d lean towards Express.
+Customアカウントでは、連結アカウントに関する質問はすべてプラットフォーム側で対応する必要があります。
+Standard・Expressアカウントでは、一部の質問についてはStripe側がプラットフォームに代わって回答します。
+例えば、本人確認やコンプライアンスの要件が変化した場合、Stripeから連結アカウントのユーザーに連絡をとり、アカウント情報が現地の規制要件に準拠した内容になっていることを確認します。
 
-![](https://res.cloudinary.com/practicaldev/image/fetch/s--lDe7s6rK--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_880/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/u8t0gbpesgerk30xxce6.png)
+## どのアカウントタイプが最適か？
+
+独自のインテグレーションが必要な強力な理由や、独自のUIやフローを構築・維持するための多くのリソースがない場合、StandardアカウントまたはExpressアカウントを選ぶでしょう。
+
+構築しているプラットフォームが不正利用や不審請求の申立てを対処できると仮定すると、StandardアカウントとExpressアカウントどちらを選ぶかは、連結アカウントのユーザーがエンドユーザーとどのような関係を持つかによって決まります。
+プラットフォームのユーザー、つまり、連結アカウントユーザーは、顧客と長期的な関係を築く必要があるのか、それとも一度きりの取引的な関係になるでしょうか？
+もしそうである場合、顧客が不正利用や不審請求の申立てを自分で対処できるだけの知識がある（または学べる）と期待するか、エンドユーザーに対して手動で課金する能力を信頼しているかどうかを考慮しましょう。
+
+オンラインビジネスに精通した人々と働いていて、エンドユーザーと長期的な関係を維持している場合、Standardアカウントを選びます。
+一度だけの取引のあるエンドユーザーと関わる一般のインターネットユーザーや、エンドユーザーへの課金を防ぎたい場合には、Expressアカウントに傾くでしょう。
 
 ## 元記事: Standard vs. Express vs. Custom account types for Stripe Connect
 
