@@ -46,7 +46,7 @@ https://stripe.com/jp/connect/onboarding
 
 [Connect Onboarding](https://stripe.com/jp/connect/onboarding)を使用するには、少なくともAPIを2つ呼び出す必要があります。
 
-#### Step1: 連結アカウントを作成する
+#### Step　1: 連結アカウントを作成する
 
 まずは連結アカウントを作成します。
 
@@ -62,7 +62,7 @@ const account = await stripe.accounts.create({type: 'standard'});
 
 https://stripe.com/docs/api/accounts/create
 
-#### Step2: アカウントへのリンクを作成する
+#### Step　2: アカウントへのリンクを作成する
 
 作成した連結アカウントのIDを利用して、ホスト型のオンボーディング画面に移動するためのURLを取得します。
 
