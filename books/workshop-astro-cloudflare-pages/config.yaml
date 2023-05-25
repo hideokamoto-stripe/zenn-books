@@ -1,0 +1,14 @@
+title: "[Stripe x Cloudflareワークショップ] Astroを使って、サブスクリプション申し込みページを作ろう"
+summary: "AstroとCloudflareそしてStripeを利用して、サブスクリプションの申し込みページを構築します。"
+topics: ['stripe']
+published: true
+price: 0 # 有料の場合200〜5000
+# 本に含めるチャプターを順番に並べましょう
+chapters:
+  - step0
+  - step1
+  - step2
+  - step3
+  - step4
+  - step5
+  - advanced
