@@ -37,9 +37,10 @@ https://www.docswell.com/s/hidetaka-stripe/KRXQNG-stripe-wordpress-no-code-works
 
 ワークショップは「手を動かすパート」と「ユースケースなどを読むパート」の２つに分かれています。
 
-* 触って覚えるStripe Payment Links 
-* Webhookを使った決済体験に触れてみよう 
-* Payment Linksでできること・できないこと 
-* Payment Linksから始まるRFA (Revenue & Finance Automation)
-
+- 触って覚えるStripe Payment Links 
+- 商品発送やクーポンなど、支払いフォームをカスタマイズしてみよう
+- 売上を増やす提案や、不正利用対策など、収益を増やす施策を試してみよう
+- サブスクリプション商品を販売する方法
+- Payment Linksでできること・できないこと
+ 
 それでは早速Payment Linksを触っていきましょう。
