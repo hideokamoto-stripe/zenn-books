@@ -1,4 +1,4 @@
-title: "Stripe Payment Linksで始める、ノーコードなオンライン決済入門"
+title: "No Codeで始めるStripe -  触って覚える Stripe Payment Links"
 summary: 
   StripeのPayment Linksを利用すると、コードを書かずにクレジットカードなどの決済を受け付けるURLを作成できます。
   また、Dashboardで設定を行うことで、割引やGoogle Analyticsでのトラッキング、QRコード発行なども簡単に行えます。

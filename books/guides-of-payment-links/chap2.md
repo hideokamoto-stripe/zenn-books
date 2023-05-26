@@ -1,31 +1,56 @@
 ---
-title: "Payment Linksで決済URLを作ってみよう"
+title: "売上を増やす提案や、不正利用対策など、収益を増やす施策を試してみよう"
 ---
 
 
-## Step0: Stripeアカウントを作成する
+## 3. クロスセルを提案してみよう
 
-## Step1: 販売・提供する商品やサービス情報を登録する
+オリジナルグッズを一 緒に売りたい
 
-## Step2: 支払いリンクを作成する
+[商品]ページから、 [商品を追加]をクリック
+![](https://storage.googleapis.com/zenn-user-upload/b3044b11a789-20230525.png)
 
-## Step3: テストモードで動作を確認する
+商品情報を 入力して保存
+![](https://storage.googleapis.com/zenn-user-upload/9d89c108e8bb-20230525.png)
 
-## Step4: ダッシュボードで注文情報を確認する
-※メール通知も触れておく？
+コーヒー豆の 商品ページに移動
+![](https://storage.googleapis.com/zenn-user-upload/20cf26d0777b-20230525.png)
 
-### カスタマイズ
+[クロスセル]で 商品を登録
+![](https://storage.googleapis.com/zenn-user-upload/0d43e1212eba-20230525.png)
 
-### 複数の商品を登録してみよう
+登録できた状態
+![](https://storage.googleapis.com/zenn-user-upload/95b13159d738-20230525.png)
 
-https://qiita.com/hideokamoto/items/3b3077f8a3c4c0c57725
+レコメンドが増える
+![](https://storage.googleapis.com/zenn-user-upload/905e431f28c1-20230525.png)
 
-### 見た目をカスタマイズしよう
+## 4. 不正請求対策をはじめよう
 
-https://qiita.com/hideokamoto/items/0fca21987e5875d91258
+[支払い]タブから[不正使用とリスク]を開く
+![](https://storage.googleapis.com/zenn-user-upload/c5e04cf46e2b-20230525.png)
 
+[+ルールを追加]ボタンをクリック
+![](https://storage.googleapis.com/zenn-user-upload/a4a9cef6bca2-20230525.png)
 
-### オフラインでの販売に応用する
-QRコード
-https://qiita.com/hideokamoto/items/14ef0c1159d6a567233a
-（AppsでカスタムのQRコード作る？）
+[3DSリクエストのルー ルを追加] をクリック
+![](https://storage.googleapis.com/zenn-user-upload/1bd587da67c8-20230525.png)
+
+「指定金額以上の決済は、3DS必須」にする :amount_in_jpy: > 10
+![](https://storage.googleapis.com/zenn-user-upload/db8b71fedf06-20230525.png)
+
+ルールのプレビュー （過去の決済データで照合）
+[ルールを追加]を クリックして確定
+![](https://storage.googleapis.com/zenn-user-upload/7ba160cf412d-20230525.png)
+
+![](https://storage.googleapis.com/zenn-user-upload/76410a2245e5-20230525.png)
+
+決済時に3DS2の 認証が入るように
+![](https://storage.googleapis.com/zenn-user-upload/3b71d7fb5793-20230525.png)
+
+パフォーマンスレポートは最大24時間遅延する
+![](https://storage.googleapis.com/zenn-user-upload/76410a2245e5-20230525.png)
+
+:::message
+Radar for Teamsは有料
+:::

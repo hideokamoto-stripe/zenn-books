@@ -1,16 +1,24 @@
 ---
-title: "本番環境で利用するための準備をしよう"
+title: "Payment Linksでできること・できないこと "
 ---
 
+## Stripe PaymentLinksが向いていないケース 
+### 在庫を厳密に管理したいケース 
+スクラッチ開発ならCheckout、それ以外はShopifyなどASPへ 
+
+### 商品数が多い、組み合わせ販売の種類が多いケース
+Checkoutを使って、複数の組み合わせパターンをカバー 
+
+### Customer情報を再利用したいケース
+料金表のベータを使うか、Checkoutを利用
 
 
-### ブランドロゴなどを設定しよう
 
+## Stripe PaymentLinksが向いているケース 
+### 商品・プラン数の少ないプロダクトやサービス 
+### 開発工数をとにかく少なくしたいプロジェクト 
 
-### 特商法に基づく表示や返品ポリシーなどを用意しよう
-
-https://qiita.com/hideokamoto/items/382956c50973c7e1fe7b
-https://qiita.com/hideokamoto/items/9ca5845a4f68dae808fd
-### アプリやメールで通知を受け取ろう
-
-### 本番環境の利用申請を出そう
+## Point: 
+* 「開発」より「まず売る」に集中できる 
+* Webhookが豊富なので、システム連携も比較的容易
+* ある程度売上や顧客ができたタイミングで、 Stripe Checkout / 料金表の組み込みに移行する

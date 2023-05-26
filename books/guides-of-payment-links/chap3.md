@@ -1,34 +1,20 @@
 ---
-title: "ユースケースに応じたカスタマイズを行おう"
+title: "Webhookを使った決済体験に触れてみよう "
 ---
 
+Pipedreamで ローコードに ワークフローを定義
+![](https://storage.googleapis.com/zenn-user-upload/2c4f0a667d2b-20230525.png)
 
-### 配送を伴うECサイト向けのカスタマイズ
+注文時に入力したメールアドレスに、 カスタムメールが届く
+![](https://storage.googleapis.com/zenn-user-upload/6c375ac47fb2-20230525.png)
 
-・配送情報
-・クロスセル
-https://qiita.com/hideokamoto/items/dcb11d03b3fe5516c4ba
-・数量の変更
+Stripe Appsでも メール送信などを 自動化可能（一部有料）
+![](https://storage.googleapis.com/zenn-user-upload/0749f976b1c9-20230525.png)
 
-### 施設予約や贈り物などの応用系ECサイト向けのカスタマイズ
+## Webhook = If this, Then that 
+* If this: もし〜が起きたら 
+* Then that: その時〜を実行する 
 
-・ラベルの変更　https://qiita.com/hideokamoto/items/a673ef7714ee67d7476d
-・カスタムフィールド
-・
-
-### 会員サービスなどのサブスクリプション向けカスタマイズ
-
-・クロスセル
-https://qiita.com/hideokamoto/items/dcb11d03b3fe5516c4ba
-・カスタマーポータル
-・利用規約への同意
-https://qiita.com/hideokamoto/items/51cadadb0d8dada01d2a
-・メアド事前入力
-https://qiita.com/hideokamoto/items/470e0ce62d7e7cfc779d
-
-### 知っていると便利な有料機能
-
-・Tax
-・請求書PDF
-・
-https://qiita.com/hideokamoto/items/2cf875684176233ef61d
+###  Example 
+* If this: サブスクリプションの支払いが完了したら 
+* Then that: SFAに契約内容を同期する, 顧客にオンボーディングメールを送付する, 顧客にシステムへのアクセス権を付与する 47
