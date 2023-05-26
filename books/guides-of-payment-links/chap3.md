@@ -35,30 +35,105 @@ Stripeでは、「１商品につき１つ」クロスセルの提案設定が�
 
 ## 不正請求対策をはじめよう
 
-[支払い]タブから[不正使用とリスク]を開く
-![](https://storage.googleapis.com/zenn-user-upload/c5e04cf46e2b-20230525.png)
+オンラインでの商品販売やサービス提供を開始すると、「クレジットカードの不正利用」への対策が必要になります。
 
-[+ルールを追加]ボタンをクリック
-![](https://storage.googleapis.com/zenn-user-upload/a4a9cef6bca2-20230525.png)
+Stripeの公開しているレポートでは、「2020 年 3 月から 5 月にかけて、不正使用関連以外の理由コード 「( 商品が届かない」「商品に不満がある」など) による申請が発生した決済取引は、2019 年の 2 倍以上に増加した」と紹介されています。
 
-[3DSリクエストのルー ルを追加] をクリック
-![](https://storage.googleapis.com/zenn-user-upload/1bd587da67c8-20230525.png)
+https://stripe.com/ja-de/guides/state-of-online-fraud
 
-「指定金額以上の決済は、3DS必須」にする :amount_in_jpy: > 10
-![](https://storage.googleapis.com/zenn-user-upload/db8b71fedf06-20230525.png)
+不正に入手されたクレジットカードでの注文が行われると、「本来のクレジットカード所有者から、カード会社に代金の返金を求める申請」が行われます。そしてカード会社がカード所有者の申請を承認した場合、支払われたはずの代金は顧客に返金されます。その時点では、すでに商品を発送している可能性が高いため、商品の原価・発送料などの損失が発生します。
 
-ルールのプレビュー （過去の決済データで照合）
-[ルールを追加]を クリックして確定
-![](https://storage.googleapis.com/zenn-user-upload/7ba160cf412d-20230525.png)
+Stripeでは、3Dセキュアによる本人確認認証や、Stripe Radarを利用した不正利用への対策を行うことができます。
 
-![](https://storage.googleapis.com/zenn-user-upload/76410a2245e5-20230525.png)
+https://stripe.com/ja-us/radar/chargeback-protection
 
-決済時に3DS2の 認証が入るように
-![](https://storage.googleapis.com/zenn-user-upload/3b71d7fb5793-20230525.png)
+ここでは、3Dセキュアの設定を変更して、不正利用のリスク削減を目指しましょう。
 
-パフォーマンスレポートは最大24時間遅延する
-![](https://storage.googleapis.com/zenn-user-upload/76410a2245e5-20230525.png)
+### 3Dセキュア認証のリクエスト閾値を変更する
+
+3Dセキュアによる認証は、「カード会社が必要と判断した場合」だけでなく「認証を推奨する場合」や「すべての3Dセキュア認証に対応したクレジットカード」を対象にできます。
+
+Stripeダッシュボードん[支払い]から[不正使用とリスク]を開きましょう。
+![](https://storage.googleapis.com/zenn-user-upload/be51de4b06aa-20230526.png)
+
+[ルール]タブに移動後、ページをスクロールして、[認証ルール]セクションに移動しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/8237c4a1953a-20230526.png)
+
+ここでは、「3Dセキュア認証を要求する状態」の設定を、３段階から選べます。
 
 :::message
-Radar for Teamsは有料
+**４段階目の設定**
+「すべて無効化する」ことで、3Dセキュアの認証を行わないことも可能です。
+が、不正利用のリスクが増加するため、お勧めしません。
 :::
+
+「認証が必須なカード」に加えて、「推奨する」とされたカードにも認証をリクエストしてみましょう。
+
+「3Dセキュアが推奨されるカードの場合」の右側にある[...]ボタンをクリックして、[有効化]をクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/b3644739bc5a-20230526.png)
+
+過去の決済データから、対象となる決済金額が算出されます。
+![](https://storage.googleapis.com/zenn-user-upload/2bebad462ccf-20230526.png)
+
+変更の影響が大きくないかを確認後、[ルールを有効にする]ボタンをクリックします。
+![](https://storage.googleapis.com/zenn-user-upload/486862b4f081-20230526.png)
+
+これで閾値の変更が完了しました。
+
+### 3Dセキュア決済の分析も、ダッシュボードにて
+
+3Dセキュアがどれくらいリクエストされて、成功・失敗やカゴ落ちなどがどれくらい起きたかを見ることができます。
+
+ダッシュボードの[レポート]から[支払い認証レポート]を確認しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/76410a2245e5-20230525.png)
+
+https://dashboard.stripe.com/authentication?startDate=2023-02-21&endDate=2023-05-22
+
+ただし、このレポートはデータの反映までに最大24時間の遅延が発生します。
+
+リアルタイムの結果については表示されませんので、ご注意ください。
+
+### Radar for Teams(有料オプション)でより詳細なルール設定
+
+有料オプションのRadar for Teamsを有効化すると、より詳細なルール設定も可能です。
+
+https://stripe.com/ja-us/radar/fraud-teams
+
+テスト環境では無料で試すことができますので、こちらも少し触ってみましょう。
+
+[支払い]タブから[不正使用とリスク]を開きます。
+![](https://storage.googleapis.com/zenn-user-upload/c5e04cf46e2b-20230525.png)
+
+[ルール]タブに移動し、[+ルールを追加]ボタンをクリックしましょう。
+![](https://storage.googleapis.com/zenn-user-upload/a4a9cef6bca2-20230525.png)
+
+今回は、[3DSリクエストのルー ルを追加] をクリックします。
+![](https://storage.googleapis.com/zenn-user-upload/1bd587da67c8-20230525.png)
+
+高額商品の不正利用を回避するため、「指定金額以上の決済は、3Dセキュア認証を必須にする」条件を設定してみましょう。
+
+ルールの入力欄に、「:amount_in_jpy: > 1000」と入力します。
+![](https://storage.googleapis.com/zenn-user-upload/db8b71fedf06-20230525.png)
+
+下部にある[ルールをテスト]ボタンをクリックすると、ルールのプレビュー画面が開きます。
+
+[ルールを追加]をクリックして、ルールを確定させましょう。
+![](https://storage.googleapis.com/zenn-user-upload/7ba160cf412d-20230525.png)
+
+この状態で、「1,000円以上の商品を注文する支払いリンクURL」にアクセスし、クレジットカード決済を試しましょう。
+
+すると、決済時にモーダル画面が一時的に開きます。これは3Dセキュア認証をテストモードで実施しているための挙動です。
+![](https://storage.googleapis.com/zenn-user-upload/3b71d7fb5793-20230525.png)
+
+拒否された時の挙動などは、テスト用に用意されたカード番号で確認できます。
+
+https://stripe.com/docs/testing#regulatory-cards
+
+## Checkpoint
+
+- クロスセルなどの、客単価アップが１クリックで可能
+- 不正利用対策で、3Dセキュア認証を無料で使える
+- 有料のRadar for Teamsを使えば、決済額やIPアドレスなどを使った設定も可能
