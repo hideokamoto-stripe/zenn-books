@@ -3,8 +3,8 @@ summary:
   StripeのPayment Linksを利用すると、コードを書かずにクレジットカードなどの決済を受け付けるURLを作成できます。
   また、Dashboardで設定を行うことで、割引やGoogle Analyticsでのトラッキング、QRコード発行なども簡単に行えます。
 
-  この書籍では、Stripe Payment Linksの基本的な使い方と、ZapierやGoogle Analytics、Stripe Appsなどを組み合わせた、ノーコードなシステム連携について紹介します。
-  
+  この本では、Stripe Payment Linksを使って、簡単に決済・サブスクリプション申し込みを組み込む方法を紹介します。
+
   サービスやアプリを新しくスタートする際に欠かせない「オンライン決済」を、Payment Linksでシンプルにはじめましょう。
 topics: ['stripe', 'nocode']
 published: false
@@ -17,4 +17,6 @@ chapters:
   - chap3
   - chap4
   - chap5
+  - chap6
+  - chap7
   - chapx

@@ -2,62 +2,149 @@
 title: "Payment Links(支払いリンク)をとりあえず作ってみよう"
 ---
 
+「Payment Linksを使って支払いリンクを作成すること」自体は、5分も必要ありません。
 
-## Stripe Dashboardに ログイン
+「習うより慣れよ」とも言いますので、ここではいきなりテスト環境で支払いリンクを作成してみましょう。
 
-[作成]から [支払いリンク]を 選択
-![](https://storage.googleapis.com/zenn-user-upload/69bed5e60a70-20230525.png)
+## Stripeダッシュボードに ログイン
 
--  [c]キー -> [l]キーの順にキーボード入力
-- https://paymentlinks.new
+まずはStripeダッシュボードにログインしましょう。
+
+https://dashboard.stripe.com/
+
+### Stripeアカウントは、メールアドレスだけで作成可能
+
+データを登録するためには、Stripeアカウントが必要です。
+まだアカウントを持っていない方は、以下のURLからアカウントを作成してください。
+
+https://dashboard.stripe.com/register
+
+
+![](https://storage.googleapis.com/zenn-user-upload/939f923c3dfc-20220419.png)
+
+
+### 新しいテスト用アカウントを作成しよう
+
+まずは、今回のテストアプリ用のストアアカウントを作成します。
+
+Stripeでは、ストアやサービス毎に複数のアカウントを作成・管理することが可能です。
+アカウントを分けることで、APIの動作確認やワークショップ中の事故で顧客データや請求内容に予期せぬ変更が入るリスクなどを回避できます。
+
+ページ左上のアイコンをクリックし、[新規アカウント]をクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/3fcedd882d34-20220419.png)
+
+アカウントでは、ビジネス・企業名とどの国で業務を行なっているかの２点を設定します。
+
+今回はデモアプリですので、以下のように設定しましょう。
+
+- アカウント名: demo.特産品.com
+- 業務をおこなっている国: 日本
+
+![](https://storage.googleapis.com/zenn-user-upload/7f654a649b6b-20220419.png)
+
+設定が完了すると、アカウントのTOPページに移動します。
+
+![](https://storage.googleapis.com/zenn-user-upload/9058b6a5d7ce-20220419.png)
+
+#### Tips: 本番環境での利用について
+
+アカウント作成すると、テスト環境が用意されます。
+
+テスト環境では、「Stripeが用意するテストカード番号以外の入力を拒否する」「請求書などのメールを送信できるアドレスが制限されている」などの制限があります。
+
+実際に顧客の決済を受け付けるには、なるべく早い段階で本番環境の利用申請を行うようにしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/b0d0b1a434d3-20220419.png)
+
+なお、「サービス内容の詳細などの情報が不十分だと判断された場合」や「[禁止/制限付き業種](https://stripe.com/ja-it/legal/restricted-businesses)に該当すると判断された場合」、アカウントが停止される可能性があります。禁止・制限付き業種に該当しないかの事前に確認や、できるだけ詳細なビジネス情報の入力をお勧めします。
+
+## Payment Linksで「支払いリンク」を作成しよう
+
+Stripeアカウントの準備ができましたので、支払いリンクを作成しましょう。
+
+### 支払いリンク作成画面に移動する
+ダッシュボードを表示した状態で、 [c]キー -> [l]キーの順にキーボードを入力します。
+
+![](https://storage.googleapis.com/zenn-user-upload/9058b6a5d7ce-20220419.png)
+
+すると支払いリンクを作成する画面が開きます。
 
 ![](https://storage.googleapis.com/zenn-user-upload/6077c0b5f263-20230525.png)
 
+このように、Stripeダッシュボードでは、操作を簡単にするための[キーボードショートカット]が複数用意されています。
 
-[新しい商品を追加] で商品を登録
+![](https://storage.googleapis.com/zenn-user-upload/85f46fa1c303-20230526.png)
+
+#### その他の支払いリンク作成画面の開き方
+キーボードショートカット以外にも、いくつかのアクセス方法が用意されています。
+
+##### ヘッダーメニューから移動する
+ページ上部の[作成]ボタンをクリックし、[支払いリンク]を選択しましょう。
+![](https://storage.googleapis.com/zenn-user-upload/69bed5e60a70-20230525.png)
+
+##### URLで直接移動する
+https://paymentlinks.new をブックマークすることで、URLから直接移動することも可能です。
+
+
+### 請求するための商品を登録しよう
+
+支払いリンクでは、注文する商品や申し込みするサブスクリプションプランの登録が必要です。
+
+![](https://storage.googleapis.com/zenn-user-upload/6077c0b5f263-20230525.png)
+
+画面左側の設定画面にある、[商品]セクションの検索フォームをクリックしましょう。
+
+[新しい商品を追加] ボタンと、すでに登録されている商品のリストが表示されます。
 
 ![](https://storage.googleapis.com/zenn-user-upload/e1637ddc7ebb-20230525.png)
 
-商品登録画面
+ここでは[新しい商品を追加]をクリックします。
+
+すると[商品登録画面]が開きます。
+
 ![](https://storage.googleapis.com/zenn-user-upload/f78096b891db-20230525.png)
 
-商品情報を登録後、 [商品を追加]を クリック
+ここでは、「コーヒー豆をオンライン販売するお店」を想定して、次の商品を登録しましょう。
+
+|商品名|画像（フリー素材DLページ）|説明文|料金体系モデル|価格|通貨|種類|
+|:--|:--|:--|:--|:--|:--|:--|
+|焙煎済みコーヒー豆|https://www.pakutaso.com/20170200038post-10294.html|焙煎済みのコーヒー豆です。|標準の料金体系|1000|JPY|[一括]|
+
+商品情報をそれぞれの入力欄に追加できたら、 [商品を追加]を クリックします。
 ![](https://storage.googleapis.com/zenn-user-upload/e4c32e4f3536-20230525.png)
 
-支払いリンクに 商品が追加された
+これで編集中の支払いリンクに 商品が追加されました。
 ![](https://storage.googleapis.com/zenn-user-upload/d14f28553922-20230525.png)
 
-[リンクを作成]を クリックする
+あとは画面右上にある[リンクを作成]を クリックすると・・・
 ![](https://storage.googleapis.com/zenn-user-upload/f9a16f0361fa-20230525.png)
 
-完成！
+これだけで注文用のURLが発行できました。
+
 ![](https://storage.googleapis.com/zenn-user-upload/e45aca6b0e93-20230525.png)
 
-[QR コード]ボタンを クリック
+表示されているURLをコピーしたり、QRコードをダウンロードして共有することで、顧客からの注文・決済を受け付けることができます。
+
+#### QRコードを発行する方法
+ポップアップストアや移動販売などでは、URLではなくQRコードを顧客のスマートフォンに読み込んで決済してもらうこともできます。
+
+支払いリンク管理画面にある、[QR コード]ボタンをクリックしましょう。
+
 ![](https://storage.googleapis.com/zenn-user-upload/7f4ba71e8e68-20230525.png)
 
-スマホでスキャン してみよう
+QRコードが表示されました。
+
+[画像をダウンロード]でデータをダウンロードし、直接印刷やカメラロールから顧客に共有することができます。
+
+また、[クリップボードにコピー]ボタンを利用すると、データをコピーできます。CanvaやFigmaなどのデザインツールで編集したい場合は、こちらを使いましょう。
+
 ![](https://storage.googleapis.com/zenn-user-upload/3372a5f246e6-20230525.png)
 
-## 決済フォームのカスタマイズ
+## Checkpoint
 
-### 1: 商品を発送できるようにしよう
+- Stripeアカウントは、**テスト目的**ならメールアドレスだけあれば作れる
+- Payment Linksで支払いリンクを作るショートカットは https://paymentlinks.new
+- QRコードやURLで、簡単に決済フォームを顧客にシェアしよう
 
-売れた豆を 発送するには 住所とTELが必要
-
-[…]ボタンを押して、 [編集]をクリック
-![](https://storage.googleapis.com/zenn-user-upload/151dc0e26cdf-20230525.png)
-
-オプションを 左画像と同じにする
-![](https://storage.googleapis.com/zenn-user-upload/7e7e01d5a50d-20230525.png)
-
-[配送先の国を選択する] をクリック
-
-[日本]にチェックを入れて、 [保存する]をクリック
-![](https://storage.googleapis.com/zenn-user-upload/315cca60f4e0-20230525.png)
-
-[リンクを更新する]を クリック
-![](https://storage.googleapis.com/zenn-user-upload/1917977b4c72-20230525.png)
-
-配送情報フォームが 追加された状態
-![](https://storage.googleapis.com/zenn-user-upload/0175a56f7ccb-20230525.png)
+次のステップでは、作成した支払いフォームのカスタマイズを行います。
