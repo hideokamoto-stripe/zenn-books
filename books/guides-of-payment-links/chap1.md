@@ -126,7 +126,29 @@ https://paymentlinks.new をブックマークすることで、URLから直接�
 
 表示されているURLをコピーしたり、QRコードをダウンロードして共有することで、顧客からの注文・決済を受け付けることができます。
 
-#### QRコードを発行する方法
+## 作成した支払いリンクを、顧客に共有・サイトに掲載しよう
+
+作成した支払いリンクを使って、さまざまな方法で決済の受付やサブスクリプションの申し込みが行えます。
+
+ここでは「URLの共有」「QRコードの発行」「購入ボタンの埋め込み」の3つを紹介します。
+
+### 支払いリンクURLを共有する
+
+もっとも簡単な方法は、URLを取得することです。
+
+支払いリンク管理画面に、[コピー]ボタンがありますので、クリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/7f4ba71e8e68-20230525.png)
+
+
+これでURLをコピーしました。
+
+あとはWordPressやSTUDIOなどのサイトビルダーやCMSにURLをリンクとして設定するだけで、組み込みが完了します。
+
+![](https://storage.googleapis.com/zenn-user-upload/79116c2e516f-20230526.png)
+
+
+### QRコードを発行する方法
 ポップアップストアや移動販売などでは、URLではなくQRコードを顧客のスマートフォンに読み込んで決済してもらうこともできます。
 
 支払いリンク管理画面にある、[QR コード]ボタンをクリックしましょう。
@@ -141,10 +163,39 @@ QRコードが表示されました。
 
 ![](https://storage.googleapis.com/zenn-user-upload/3372a5f246e6-20230525.png)
 
+### 購入ボタンのコードスニペットを埋め込む
+
+2023年から、支払いリンクをボタンまたはカード形式でサイトに埋め込むことができるようになりました。
+
+https://stripe.com/docs/payment-links/buy-button
+
+
+支払いリンク管理画面にある、[購入ボタン]ボタンをクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/7f4ba71e8e68-20230525.png)
+
+クリックすると、サイトやアプリに埋め込む購入ボタンの編集画面が開きます。
+
+![](https://storage.googleapis.com/zenn-user-upload/a7a7926ab354-20230526.png)
+
+「商品情報をStripeとCMSで二重管理したくない」場合や、「LPやブログで手軽に埋め込みしたい」場合には、商品名や画像・価格が表示される[カード]を選びましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/4a8464f56a5b-20230526.png)
+
+すでにあるレイアウトに埋め込みたい場合など、「あくまでボタンだけが欲しい場合」には[ボタン]を選択します。
+
+![](https://storage.googleapis.com/zenn-user-upload/9a8fb3db4743-20230526.png)
+
+背景やボタンの色なども変更できます。
+
+![](https://storage.googleapis.com/zenn-user-upload/ed43352326e6-20230526.png)
+
+このように、URL・QRコード・コードスニペットの３種類を必要な場面や状況に併せて使い分けることができます。
+
 ## Checkpoint
 
 - Stripeアカウントは、**テスト目的**ならメールアドレスだけあれば作れる
 - Payment Linksで支払いリンクを作るショートカットは https://paymentlinks.new
-- QRコードやURLで、簡単に決済フォームを顧客にシェアしよう
+- QRコードやURL・購入ボタンで、簡単に決済フォームを顧客にシェアしよう
 
 次のステップでは、作成した支払いフォームのカスタマイズを行います。
