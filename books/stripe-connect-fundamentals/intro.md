@@ -13,3 +13,5 @@ https://dev.to/cjav_dev/series/21547
 
 
 ## 更新履歴
+
+- 2023/05/30 １章公開
