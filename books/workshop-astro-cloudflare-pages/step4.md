@@ -270,7 +270,7 @@ const now = new Date()
 		</stripe-pricing-table>
 		<a
 -			href="https://billing.stripe.com/p/login/test_xxxx"
--			href={PUBLIC_STIPE_CUSTOMER_PORTAL_URL}
++			href={PUBLIC_STIPE_CUSTOMER_PORTAL_URL}
 			target="_blank"
 			rel="noreferrer noopener"
 		>マイページ (メール認証)</a>

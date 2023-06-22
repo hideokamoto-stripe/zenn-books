@@ -84,7 +84,7 @@ stripe listen --forward-to http://localhost:3000/api/webhooks
 PUBLIC_STRIPE_PUBLISHABLE_API_KEY=<publishable-keyの値>
 PUBLIC_STRIPE_PRICING_TABLE_ID=<pricing-table-idの値>
 PUBLIC_STIPE_CUSTOMER_PORTAL_URL=<カスタマーポータルのURL>
-+STRIPE_WEBHOOK_SECRET=wsec_xxx
++STRIPE_WEBHOOK_SECRET=whsec_xxxxx
 ```
 
 続いて`POST /api/webhooks`リクエストを処理するAPIを追加します。
@@ -243,7 +243,7 @@ export const post: APIRoute = async (context) => {
 +            body: "ok"
 +        }
 +    } catch (err) {
-+        const errorMessage = `⚠️  Webhook signature verification failed. ${err.+message}`
++        const errorMessage = `⚠️  Webhook signature verification failed. ${err.message}`
 +        console.log(errorMessage);
 +        return new Response(errorMessage, {
 +            status: 400
