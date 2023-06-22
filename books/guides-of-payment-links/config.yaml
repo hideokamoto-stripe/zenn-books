@@ -1,13 +1,13 @@
-title: "Stripe Payment Linksで始める、ノーコードなオンライン決済入門"
+title: "No Codeで始めるStripe -  触って覚える Stripe Payment Links"
 summary: 
   StripeのPayment Linksを利用すると、コードを書かずにクレジットカードなどの決済を受け付けるURLを作成できます。
   また、Dashboardで設定を行うことで、割引やGoogle Analyticsでのトラッキング、QRコード発行なども簡単に行えます。
 
-  この書籍では、Stripe Payment Linksの基本的な使い方と、ZapierやGoogle Analytics、Stripe Appsなどを組み合わせた、ノーコードなシステム連携について紹介します。
-  
+  この本では、Stripe Payment Linksを使って、簡単に決済・サブスクリプション申し込みを組み込む方法を紹介します。
+
   サービスやアプリを新しくスタートする際に欠かせない「オンライン決済」を、Payment Linksでシンプルにはじめましょう。
 topics: ['stripe', 'nocode']
-published: false
+published: true
 price: 0 # 有料の場合200〜5000
 # 本に含めるチャプターを順番に並べましょう
 chapters:
@@ -16,6 +16,6 @@ chapters:
   - chap2
   - chap3
   - chap4
-  - chap5
+  #- chap5
   - chap6
   - chapx
