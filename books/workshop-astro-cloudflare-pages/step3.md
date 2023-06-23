@@ -1,8 +1,8 @@
 ---
-title: "Stripeを利用して、商品・料金情報を登録しよう"
+title: "サブスクリプション商品を販売する方法"
 ---
 
-ここからは、商品や料金情報をStripeで管理する方法を紹介します。
+アプリの準備ができましたので、さっそくサブスクリプション申し込みフォームを用意しましょう。
 
 ## Stripeアカウントを用意しよう
 
@@ -52,122 +52,199 @@ Stripeでは、ストアやサービス毎に複数のアカウントを作成�
 
 なお、「サービス内容の詳細などの情報が不十分だと判断された場合」や「[禁止/制限付き業種](https://stripe.com/ja-it/legal/restricted-businesses)に該当すると判断された場合」、アカウントが停止される可能性があります。禁止・制限付き業種に該当しないかの事前に確認や、できるだけ詳細なビジネス情報の入力をお勧めします。
 
-## 商品・料金を登録しよう
+## 支払いリンクでサブスクリプション申し込みを受け付ける方法
 
-それでは、さっそく商品を登録しましょう。
+Stripeでは、「Payment Links」を利用して1回きりの注文もサブスクリプションの申し込みもコードを書かずに用意することができます。
 
-ダッシュボードのメニューから[商品]をクリックします。
+### 支払いリンク作成画面に移動する
 
-![](https://storage.googleapis.com/zenn-user-upload/51ef7e37f6cb-20220419.png)
-直接リンク: https://dashboard.stripe.com/test/products
+ダッシュボードを表示した状態で、 [c]キー -> [l]キーの順にキーボードを入力します。
 
-[商品を追加]ボタンがありますので、クリックしましょう。
+![](https://storage.googleapis.com/zenn-user-upload/9058b6a5d7ce-20220419.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/bfb227ca5ca5-20220419.png)
 
-商品の登録画面が開きます。
+このように、Stripeダッシュボードでは、操作を簡単にするための[キーボードショートカット]が複数用意されています。
 
-### 商品の基本情報を登録しよう
+![](https://storage.googleapis.com/zenn-user-upload/85f46fa1c303-20230526.png)
+
+#### その他の支払いリンク作成画面の開き方
+キーボードショートカット以外にも、いくつかのアクセス方法が用意されています。
+
+##### ヘッダーメニューから移動する
+ページ上部の[作成]ボタンをクリックし、[支払いリンク]を選択しましょう。
+![](https://storage.googleapis.com/zenn-user-upload/69bed5e60a70-20230525.png)
+
+##### URLで直接移動する
+https://paymentlinks.new をブックマークすることで、URLから直接移動することも可能です。
+
+
+### 請求するための商品を登録しよう
+
+支払いリンクでは、注文する商品や申し込みするサブスクリプションプランの登録が必要です。
+
+![](https://storage.googleapis.com/zenn-user-upload/6077c0b5f263-20230525.png)
+
+画面左側の設定画面にある、[商品]セクションの検索フォームをクリックしましょう。
+
+
+[新しい商品を追加] ボタンと、すでに登録されている商品のリストが表示されます。
+
+![](https://storage.googleapis.com/zenn-user-upload/e1637ddc7ebb-20230525.png)
+
+ここでは[新しい商品を追加]をクリックして、[商品登録画面]を開きます。
+
+![](https://storage.googleapis.com/zenn-user-upload/f78096b891db-20230525.png)
+
+### 商品とサブスクリプション料金プランを登録しよう
+
+商品情報とサブスクリプションの料金プランを登録しましょう。
+
+#### 商品情報を設定する
 
 デモ用の商品として、以下のテキストと画像を入力・アップロードしましょう。
 
 |商品名|画像（フリー素材DLページ）|説明文|
 |:--|:--|:--|
-|松坂牛ステーキ定期便|https://www.pakutaso.com/20210514144post-34975.html|松坂牛のステーキ２枚セットを毎月お届けします。＊冷凍|
+|コーヒー豆定期お届け便|https://www.pakutaso.com/20170200038post-10294.html|厳選したコーヒー豆を、定期的にお届けします。|
 
-![](https://storage.googleapis.com/zenn-user-upload/9d44ad1d05f8-20220419.png)
+![](https://storage.googleapis.com/zenn-user-upload/91990cbb468b-20230526.png)
 
-### 価格情報（料金）を登録して保存しよう
+|商品名|画像（フリー素材DLページ）|説明文|料金体系モデル|価格|通貨|種類|
+|:--|:--|:--|:--|:--|:--|:--|
+|焙煎済みコーヒー豆|https://www.pakutaso.com/20170200038post-10294.html|焙煎済みのコーヒー豆です。|標準の料金体系|1000|JPY|[一括]|
 
-続いて商品の価格を登録しましょう。
+#### 料金プランを追加しよう
 
-ページをスクロールして[料金情報]フォームを表示し、以下のデータを入力します。
+続いて、サブスクリプションの料金プランを追加します。
 
-|料金体系モデル|価格|通貨|種類|請求期間|
-|:--|:--|:--|:--|:--|
-|標準の料金体系|15000|JPY|[継続]|月次|
+モーダル画面下部の、[価格]に移動しましょう。
+![](https://storage.googleapis.com/zenn-user-upload/52669da529aa-20230526.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/5543ca75449b-20230421.png)
+[継続]ボタンを選択すると、とサブスクリプションの料金プランを設定する画面が開きます。
 
+![](https://storage.googleapis.com/zenn-user-upload/456dad3e8e99-20230526.png)
 
-入力が終われば、ページ右上の[商品を保存]をクリックしましょう。
+料金データを次のように入力しましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/39b9c04e8148-20220419.png)
-
-商品ページに移動すれば、登録完了です。
-
-![](https://storage.googleapis.com/zenn-user-upload/0fec6eacfa41-20230421.png)
-
-### 「X個目からY円」の「段階的価格」を設定する
-
-Stripeでは、「ユーザー数に応じた課金」や「大量購入時のディスカウント」にも対応しています。
-
-ここでは、「10個以上注文した場合、11個目から10%オフ」の定期便商品を作ってみましょう。
-
-新しく以下の内容で商品・料金を登録します。
-
-**商品情報**
-|商品名|画像（フリー素材DLページ）|説明文|
+|価格|通貨|請求期間|
 |:--|:--|:--|
-|とうもろこし|https://www.pakutaso.com/201707582052-24.html|産地直送のとうもろこしです。|
-
-![](https://storage.googleapis.com/zenn-user-upload/b2f41b0a2945-20230421.png)
-
-**料金情報**
-
-![](https://storage.googleapis.com/zenn-user-upload/a831d71433b3-20230421.png)
-
-### 複数の商品を追加しよう
-
-テスト用のデータとして、いくつかのサンプルを以下に用意しました。
-全て登録する必要はありませんが、多い方が通販サイトらしくなるかと思いますので、時間に余裕のある方はぜひ登録してみましょう。
-
-
-|商品名|画像（フリー素材DLページ）|説明文|料金体系モデル|価格|通貨|種類|請求期間|
-|:--|:--|:--|:--|:--|:--|:--|:--|
-|季節の野菜セット|https://www.pakutaso.com/20211259357post-38199.html|季節に応じた野菜を厳選してお届けします|標準の料金体系|2000|JPY|[継続]|月次|
-|あまおう（小粒）|https://www.pakutaso.com/20190253059post-19776.html|小粒のあまおうを１パックにまとめました|標準の料金体系|700|JPY|[継続]|月次|
-|焙煎済みコーヒー豆|https://www.pakutaso.com/20170200038post-10294.html|焙煎済みのコーヒー豆です。|標準の料金体系|1000|JPY|[継続]|月次|
-|コーヒードリッパー（布）|https://www.pakutaso.com/20200631170post-28054.html|布製のコーヒードリッパーです。|標準の料金体系|100|JPY|[継続]|月次|
-
-### クロスセルを設定しよう
-
-Stripeのリダイレクト型決済フォーム（Payment Links / Checkout / 料金表）では、決済ページでクロスセルの提案が行えます。
-
-上のリストから、「焙煎済みコーヒー豆」と「コーヒードリッパー（布）」を登録しましょう。
-
-登録後、ダッシュボードの[商品一覧ページ](https://dashboard.stripe.com/test/products?active=true)で[焙煎済みコーヒー豆]を選択します。
-
-![](https://storage.googleapis.com/zenn-user-upload/c272e313be5a-20220419.png)
-
-商品詳細ページ中段に[クロスセル]セクションが見つかります。
-
-![](https://storage.googleapis.com/zenn-user-upload/6bc6e6d6e856-20220419.png)
-
-[商品を検索]をクリックし、[コーヒードリッパー]を選択しましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/cbfa09054263-20220419.png)
-
-これでクロスセルの準備は完了です。
-
-![](https://storage.googleapis.com/zenn-user-upload/4b49d14bcebe-20220419.png)
-
-変更または削除したい場合は、[x]アイコンをクリックしましょう。
+|1500|JPY|月次|
 
 
 
-## おさらい
+最後に[商品を追加]ボタンをクリックします。
+![](https://storage.googleapis.com/zenn-user-upload/a448b746bb3e-20230526.png)
 
-- Stripeでは、１ビジネス(サービス/ストア)毎にアカウントを作れる
-- 商品名・画像・価格などがダッシュボードから登録できる
-- クロスセルや段階的な値引きなどの複雑な設定も可能
+作成したプランが、支払いリンクに登録されました。
 
-次のステップでは、登録した商品データをNext.jsアプリで取得・表示します。
+![](https://storage.googleapis.com/zenn-user-upload/d94bf024cd48-20230526.png)
+[リンクを作成]ボタンをクリックすると、サブスクリプション申し込みの支払いリンクURLが作成されます。
+![](https://storage.googleapis.com/zenn-user-upload/1a8ded1e43ea-20230526.png)
 
-## 「早く終わった」という方のための、もう１ステップ
+## Astroサイトに、「サブスクリプション申し込みボタン」を埋め込もう
 
-Stripeでは、カード決済以外に銀行振込での請求書送付にも対応しています。
+作成した支払いリンクへの導線を、アプリに組み込みましょう。
 
-以下の記事を参考に、Stripeでの請求業務を試してみましょう。
+もっとも簡単な方法は、`a`タグで取得した支払いリンクURLへのテキストリンクを作ることです。
 
-https://qiita.com/hideokamoto/items/31c4ffd0d90bff654254
+```diff html:src/pages/index.astro
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+---
+
+<Layout title="Welcome to Astro.">
+	<main>
++		<a href="<取得した支払いリンクURL>">サブスクリプションに申し込む</a>
+	</main>
+</Layout>
+```
+
+ただしこの方法では、せっかくStripeに登録した商品・料金情報を活かすことができません。
+
+そこで[購入ボタン（Buy Button）]を支払いリンクページから生成しましょう。
+
+### 購入ボタン（Buy Button）を作る方法
+
+[購入ボタン]は、支払いリンクの詳細ページ（URLを取得した画面）から生成できます。
+
+[QRコード]ボタンの右隣にある[購入ボタン]ボタンをクリックしましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/393cde04fbe2-20230623.png)
+
+画面右側に、コードスニペットとボタンのプレビューが表示されます。
+
+![](https://storage.googleapis.com/zenn-user-upload/0c333f347e92-20230623.png)
+
+表示されたスニペットをコピーして、`src/pages/index.astro`に貼り付けましょう。
+
+```diff html:src/pages/index.astro
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+---
+
+<Layout title="Welcome to Astro.">
+	<main>
+-		<a href="<取得した支払いリンクURL>">サブスクリプションに申し込む</a>
++		<script async
++		  src="https://js.stripe.com/v3/buy-button.js">
++		</script>
++		
++		<stripe-buy-button
++		  buy-button-id="buy_btn_xxxxx"
++		  publishable-key="pk_test_xxxxxx"
++		>
++		</stripe-buy-button>
+	</main>
+</Layout>
+```
+
+ボタンのみ埋め込みしたい場合は、[設定]を[カード]から[ボタン]に変更します。
+
+![](https://storage.googleapis.com/zenn-user-upload/a1c20cd8cc88-20230623.png)
+
+
+また、配色やボタンテキストのカスタマイズも行えます。
+
+![](https://storage.googleapis.com/zenn-user-upload/6c1a84959f2d-20230623.png)
+
+変更の保存と反映は、パネル下部にある[変更を保存してコードをコピーする]ボタンをクリックします。
+
+コードスニペットが変わることはないため、埋め込み済みの購入ボタンにも変更を反映できます。
+
+## [Advanced] より便利にPayment Linksを使う Tips
+
+### Tips1: 　「初回契約手数料」などの、「１回きりの請求」を一緒に行う方法
+
+ビジネスモデルや事務手続の関係で、初回の契約時のみ追加の請求を行いたいことがあります。
+
+その場合は、支払いリンクの商品に「サブスクリプションの料金」と「１回きりの商品」両方を登録しましょう。
+
+![](https://storage.googleapis.com/zenn-user-upload/6def78011d07-20230526.png)
+
+決済ページでも、「初回のみXX円、次回からはYY円」と表示されます。
+
+![](https://storage.googleapis.com/zenn-user-upload/27ac0a80572b-20230526.png)
+
+### Tips2: 「トライアル期間」を設定しよう
+
+食品などの物理的なアイテムの定期販売では難しいですが、個人レッスンやオンラインサービスでは「まずは7日間お試しを」などのオファーを出すことができます。
+
+支払いリンクを作成・編集する際に、[オプション]で[無料トライアルを含める]をオンにしましょう。
+![](https://storage.googleapis.com/zenn-user-upload/9c75aa0aaa79-20230526.png)
+
+日数を入力できますので、[7]や[14]などを入れましょう。
+![](https://storage.googleapis.com/zenn-user-upload/ea2282bf1bd3-20230526.png)
+
+リンクを更新すると、決済画面に[無料期間]の表示が追加されます。
+
+![](https://storage.googleapis.com/zenn-user-upload/c494df7d6e8e-20230526.png)
+
+
+
+## Checkpoint
+
+- Payment Linksでは、サブスクリプション契約も提供できる
+- 購入ボタンを使えば、登録した写真や料金情報の埋め込みもできる
+- 配送料金など、一部利用できない機能がある点に注意
