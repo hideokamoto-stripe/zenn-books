@@ -74,7 +74,7 @@ Your choice has been saved in the following file: ../../.wrangler/metrics.json.
 その後、`wrangler pages`コマンドでCloudflare Pagesへデプロイしましょう。
 
 ```bash
-% wrangler pages publish dist
+% wrangler pages deploy dist
 ```
 
 Cloudflare Pagesに新しくプロジェクトを作成するか聞かれます。
