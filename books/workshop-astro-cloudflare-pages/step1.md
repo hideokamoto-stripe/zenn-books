@@ -24,14 +24,25 @@ Astroで新しくアプリを立ち上げるには、`npm create astro@latest`�
 
 ターミナルで`npm create astro@latest`コマンドを実行しましょう。
 
+::: message
+「create-astro@バージョン番号をインストールしますか？」と確認が入ることがあります。
+```bash
+$ npm create astro@latest
+Need to install the following packages:
+  create-astro@3.1.8
+Ok to proceed? (y) y
+```
+この画面になった場合は、[y]を入力すればOKです。
+:::
+
 すると、[HusonAI](https://houston.astro.build/)というGPT-3ベースのAIが、アプリの設定についていくつか質問してきます。
 
 ```bash
 ╭─────╮  Houston:
-│ ◠ ◡ ◠  Keeping the internet weird since 2021.
+│ ◠ ◡ ◠  Let's make the web a better place!
 ╰─────╯
 
- astro   v2.3.0 Launch sequence initiated.
+ astro   v2.7.0 Launch sequence initiated.
 
 ```
 

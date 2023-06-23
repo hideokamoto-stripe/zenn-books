@@ -130,8 +130,6 @@ https://paymentlinks.new をブックマークすることで、URLから直接�
 |:--|:--|:--|
 |1500|JPY|月次|
 
-
-
 最後に[商品を追加]ボタンをクリックします。
 ![](https://storage.googleapis.com/zenn-user-upload/a448b746bb3e-20230526.png)
 
@@ -200,47 +198,13 @@ import Card from '../components/Card.astro';
 </Layout>
 ```
 
-ボタンのみ埋め込みしたい場合は、[設定]を[カード]から[ボタン]に変更します。
+ファイルを保存すると、`npm start`で実行しているAstroアプリの表示が切り替わります。
 
-![](https://storage.googleapis.com/zenn-user-upload/a1c20cd8cc88-20230623.png)
+![](https://storage.googleapis.com/zenn-user-upload/e8e29a54f9aa-20230623.png)
 
+ボタンをクリックすると、Stripeが提供する決済フォームに遷移します。
 
-また、配色やボタンテキストのカスタマイズも行えます。
-
-![](https://storage.googleapis.com/zenn-user-upload/6c1a84959f2d-20230623.png)
-
-変更の保存と反映は、パネル下部にある[変更を保存してコードをコピーする]ボタンをクリックします。
-
-コードスニペットが変わることはないため、埋め込み済みの購入ボタンにも変更を反映できます。
-
-## [Advanced] より便利にPayment Linksを使う Tips
-
-### Tips1: 　「初回契約手数料」などの、「１回きりの請求」を一緒に行う方法
-
-ビジネスモデルや事務手続の関係で、初回の契約時のみ追加の請求を行いたいことがあります。
-
-その場合は、支払いリンクの商品に「サブスクリプションの料金」と「１回きりの商品」両方を登録しましょう。
-
-![](https://storage.googleapis.com/zenn-user-upload/6def78011d07-20230526.png)
-
-決済ページでも、「初回のみXX円、次回からはYY円」と表示されます。
-
-![](https://storage.googleapis.com/zenn-user-upload/27ac0a80572b-20230526.png)
-
-### Tips2: 「トライアル期間」を設定しよう
-
-食品などの物理的なアイテムの定期販売では難しいですが、個人レッスンやオンラインサービスでは「まずは7日間お試しを」などのオファーを出すことができます。
-
-支払いリンクを作成・編集する際に、[オプション]で[無料トライアルを含める]をオンにしましょう。
-![](https://storage.googleapis.com/zenn-user-upload/9c75aa0aaa79-20230526.png)
-
-日数を入力できますので、[7]や[14]などを入れましょう。
-![](https://storage.googleapis.com/zenn-user-upload/ea2282bf1bd3-20230526.png)
-
-リンクを更新すると、決済画面に[無料期間]の表示が追加されます。
-
-![](https://storage.googleapis.com/zenn-user-upload/c494df7d6e8e-20230526.png)
-
+![](https://storage.googleapis.com/zenn-user-upload/12d65cff0056-20230623.png)
 
 
 ## Checkpoint
