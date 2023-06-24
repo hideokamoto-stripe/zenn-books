@@ -53,6 +53,15 @@ PUBLIC_STRIPE_PUBLISHABLE_API_KEY=pk_test_xxxx
 PUBLIC_STRIPE_CUSTOMER_PORTAL_URL=https://billing.stripe.com/p/login/test_xxxx
 ```
 
+`.dev.vars`ファイルは、ignoreしておきましょう。
+
+```diff env:.gitignore
+# macOS-specific files
+.DS_Store
+
++.dev.vars
+```
+
 その後、`src/pages/index.astro`を次のように変更しましょう。
 
 ```diff html:src/pages/index.astro

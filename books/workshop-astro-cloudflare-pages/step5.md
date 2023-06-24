@@ -13,7 +13,9 @@ Stripeのノーコード・ローコード機能の特徴の１つは、「埋�
 Stripeダッシュボードで、[支払い]から[支払いリンク]に移動しましょう。
 
 ![](https://storage.googleapis.com/zenn-user-upload/8485235fd4a5-20230623.png)
+
 [コーヒー豆定期お届け便]のリンクを選びます。
+
 ![](https://storage.googleapis.com/zenn-user-upload/2da6c3093093-20230623.png)
 
 [購入ボタン]ボタン横の[...]をクリックし、[編集]を押しましょう。
