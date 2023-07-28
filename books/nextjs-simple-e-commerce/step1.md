@@ -2,6 +2,136 @@
 title: "Introduction: Setting the Stage for the workshop"
 ---
 
+Let's get started with the workshop right away.
+
+First, let's prepare the necessary tools and accounts.
+
+## Creating a Stripe Account
+You'll need a Stripe account to store your data.
+If you don't have an account yet, please create one using the following URL:
+
+https://dashboard.stripe.com/register
+
+
+![](https://storage.googleapis.com/zenn-user-upload/939f923c3dfc-20220419.png)
+
+Once you've created an account, log in to the dashboard.
+
+https://dashboard.stripe.com/
+
+### Create a New Test Account
+First, let's create a store account for our test app.
+
+Stripe allows you to create and manage multiple accounts for different stores or services.
+Having separate accounts can help minimize the risk of unintended changes to customer data or billing amounts due to API testing or accidents during the workshop.
+
+Click the icon in the top left corner and then click New Account.
+
+![](https://storage.googleapis.com/zenn-user-upload/3fcedd882d34-20220419.png)
+
+For your account, set the business or company name and the country where you operate.
+
+Since this is a demo app, let's set it up as follows:
+
+- Account Name: demo.furni.com
+- Country of Operation: Japan
+
+
+![](https://storage.googleapis.com/zenn-user-upload/7f654a649b6b-20220419.png)
+
+Once your settings are complete, you will be directed to your account's main page.
+
+![](https://storage.googleapis.com/zenn-user-upload/9058b6a5d7ce-20220419.png)
+
+:::message
+**Tips: Using a Production Environment**
+When you create an account, a test environment is provided.
+
+Test environments have limitations such as "rejecting input other than Stripe-provided test card numbers" and "restricting the email addresses that can be sent invoices."
+
+To actually accept customer payments, it's a good idea to apply for a production environment as soon as possible.
+
+![](https://storage.googleapis.com/zenn-user-upload/b0d0b1a434d3-20220419.png)
+
+Please note that there is a risk that your account may be suspended if "the information provided about your business is deemed insufficient" or "your business is determined to fall under the [prohibited/restricted category]((https://stripe.com/ja-it/legal/restricted-businesses))." We recommend that you make sure your business is not subject to any prohibited or restricted categories and provide as much detailed business information as possible.
+
+:::
+
+## Installing Stripe CLI
+During the workshop, you'll need to forward Stripe webhook events to your local application.
+
+For this purpose, let's install Stripe CLI.
+
+### Installing with Homebrew
+Installing with Homebrew is easy.
+
+```bash
+brew install stripe/stripe-cli/stripe  
+```
+
+### Installing on macOS / Windows
+For macOS and Windows, download from the latest GitHub release.
+
+https://github.com/stripe/stripe-cli/releases/latest
+
+For macOS, it's "stripe_X.X.X_mac-os_x86_64.tar.gz" and for Windows, it's "stripe_X.X.X_windows_x86_64.zip". Each OS has its own download file.
+
+After downloading, execute the file to make Stripe CLI available.
+
+For other environments' installation methods, please check the Stripe documentation.
+
+https://stripe.com/docs/stripe-cli#install
+
+:::message
+**If you are unable to install**
+If you cannot install Stripe CLI, please use the Stripe Shell which is available in the browser.
+
+While logged in to the dashboard, go to the [Stripe CLI documentation page](https://stripe.com/docs/stripe-cli).
+
+Click the Try Online button.
+
+![](https://storage.googleapis.com/zenn-user-upload/0344d992f943-20220420.png)
+
+The CLI operation screen will be displayed at the bottom of the browser.
+
+![](https://storage.googleapis.com/zenn-user-upload/b09650f24d2e-20220420.png)
+
+:::
+
+## Connecting to your Stripe account with Stripe CLI
+Now that you've installed Stripe CLI, it's time to connect it to your Stripe account.
+
+Stripe CLI accesses Stripe resources through the Stripe API. Therefore, you need to connect to your Stripe account and retrieve the API key.
+
+### Connect to your Stripe account with stripe login
+Use the stripe login command to connect to your Stripe account.
+When you run the command, you'll see a message like "Press Enter to open the browser." Press the Enter key.
+
+```bash
+stripe login  
+Your pairing code is: amuse-revive-timely-sturdy  
+This pairing code verifies your authentication with Stripe.  
+Press Enter to open the browser (^C to quit)  
+```
+
+If you are already logged in to the Stripe Dashboard, you'll see an access permission confirmation screen like the one below.
+
+{IMG}
+
+Click Allow Access.
+
+{IMG}
+
+When you go back to the Stripe CLI screen, you'll see a message in English indicating that the connection was successful.
+
+```
+> Done! The Stripe CLI is configured for api-test with account id acct_xxxxxxxx  
+  
+Please note: this key will expire after 90 days, at which point you'll need to re-authenticate.  
+```
+
+Are you ready? Let's dive right into the workshop.
+
 ## Imagine the Story of the E-Commerce Site Development
 
 Before we dive into the workshop, let's imagine the context for developing this system.
@@ -21,11 +151,3 @@ Therefore, the goal is to create a product sales feature with a short schedule a
 Have you got the idea?
 
 Now, let's explore how to integrate product sales functionality using Stripe into your e-commerce site.
-
-## 事前の準備
-
- - step1: Build low code e-commerce site using Stripe
- - step2: Create Next.js REST API for processing order
- - step3: Developing custom product page
- - step4: Add customer management feature
- - wrapup
