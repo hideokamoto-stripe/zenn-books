@@ -1,5 +1,5 @@
 ---
-title: "Step 2: Developing a Next.js REST API and Integrating Order Processing"
+title: "Step 1: Implementing a Simple Product Sales Page with Low Code"
 ---
 
-Moving forward, we'll dive into developing a Next.js REST API and integrating Stripe order processing webhooks to enhance the functionality of your e-commerce application.
+ In this step, we'll walk you through implementing a simple product sales page with minimal code, allowing you to focus on the core features of your e-commerce site.

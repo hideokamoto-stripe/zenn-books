@@ -1,5 +1,5 @@
 ---
-title: "Step 4: Mastering the Creation of Customer Management Pages"
+title: "Step 3: Learning to Generate Product Pages Using Stripe API"
 ---
 
-In the final step, we'll teach you how to create customer management pages, ensuring a smooth and organized user experience for both you and your customers.
+Here, we'll explore how to generate product pages using Stripe API, making it easier to manage and showcase your products for sale.

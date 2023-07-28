@@ -1,5 +1,5 @@
 ---
-title: "Step 3: Learning to Generate Product Pages Using Stripe API"
+title: "Step 2: Developing a Next.js REST API and Integrating Order Processing"
 ---
 
-Here, we'll explore how to generate product pages using Stripe API, making it easier to manage and showcase your products for sale.
+Moving forward, we'll dive into developing a Next.js REST API and integrating Stripe order processing webhooks to enhance the functionality of your e-commerce application.
