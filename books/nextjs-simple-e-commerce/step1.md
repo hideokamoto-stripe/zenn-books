@@ -12,8 +12,7 @@ If you don't have an account yet, please create one using the following URL:
 
 https://dashboard.stripe.com/register
 
-
-![](https://storage.googleapis.com/zenn-user-upload/939f923c3dfc-20220419.png)
+![](https://storage.googleapis.com/zenn-user-upload/f047e1f8729e-20230731.png)
 
 Once you've created an account, log in to the dashboard.
 
@@ -27,7 +26,7 @@ Having separate accounts can help minimize the risk of unintended changes to cus
 
 Click the icon in the top left corner and then click New Account.
 
-![](https://storage.googleapis.com/zenn-user-upload/3fcedd882d34-20220419.png)
+![](https://storage.googleapis.com/zenn-user-upload/2729990856bd-20230731.png)
 
 For your account, set the business or company name and the country where you operate.
 
@@ -37,11 +36,11 @@ Since this is a demo app, let's set it up as follows:
 - Country of Operation: Japan
 
 
-![](https://storage.googleapis.com/zenn-user-upload/7f654a649b6b-20220419.png)
+![](https://storage.googleapis.com/zenn-user-upload/bde24e643ada-20230731.png)
 
 Once your settings are complete, you will be directed to your account's main page.
 
-![](https://storage.googleapis.com/zenn-user-upload/9058b6a5d7ce-20220419.png)
+![](https://storage.googleapis.com/zenn-user-upload/dff17b4068c9-20230731.png)
 
 :::message
 **Tips: Using a Production Environment**
@@ -51,7 +50,7 @@ Test environments have limitations such as "rejecting input other than Stripe-pr
 
 To actually accept customer payments, it's a good idea to apply for a production environment as soon as possible.
 
-![](https://storage.googleapis.com/zenn-user-upload/b0d0b1a434d3-20220419.png)
+![](https://storage.googleapis.com/zenn-user-upload/49772e02c9a5-20230731.png)
 
 Please note that there is a risk that your account may be suspended if "the information provided about your business is deemed insufficient" or "your business is determined to fall under the [prohibited/restricted category]((https://stripe.com/ja-it/legal/restricted-businesses))." We recommend that you make sure your business is not subject to any prohibited or restricted categories and provide as much detailed business information as possible.
 
@@ -116,11 +115,11 @@ Press Enter to open the browser (^C to quit)
 
 If you are already logged in to the Stripe Dashboard, you'll see an access permission confirmation screen like the one below.
 
-{IMG}
+![](https://storage.googleapis.com/zenn-user-upload/d5ecd73d2edf-20230731.png)
 
 Click Allow Access.
 
-{IMG}
+![](https://storage.googleapis.com/zenn-user-upload/8d56b179f6a7-20230731.png)
 
 When you go back to the Stripe CLI screen, you'll see a message in English indicating that the connection was successful.
 
@@ -140,14 +139,11 @@ You've been assigned to an e-commerce project for a furniture sales company.
 
 ![](https://storage.googleapis.com/zenn-user-upload/f0caba6b4d68-20230727.png)
 
-This company produces high-quality furniture made-to-order and delivers it to customers upon request.
-
-Since the website doesn't have a lot of traffic, there's no need for inventory management or order limitations at this stage.
-
-Once you've prepared the product sales system, other team members will begin working on the site's design and content.
-
-Therefore, the goal is to create a product sales feature with a short schedule and minimal code.
+- This company produces high-quality **furniture** made-to-order and delivers it to customers upon request.
+- Since the website doesn't have a lot of traffic, there's **no need for inventory management** or order limitations at this stage.
+- Once you've **prepared the product sales system**, other team members will begin working on the site's design and content.
+- Therefore, the goal is to **create a product sales feature** with a **short schedule** and **minimal code**.
 
 Have you got the idea?
 
-Now, let's explore how to integrate product sales functionality using Stripe into your e-commerce site.
+Now, let's explore how to integrate product sales functionality using Stripe into your **e-commerce site**.
