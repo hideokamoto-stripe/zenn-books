@@ -348,32 +348,122 @@ https://stripe.com/docs/payment-links/buy-button
 
 まずは商品ページ用のファイルを作成しましょう。
 
-`app/products/page.tsx`作成します。
-
-[@TODO]
+`app/products/page.tsx`を作成します。
 
 商品ページのレイアウトを作りましょう。
 
-```tsx app/products/page.tsx
+```ts:app/products/page.tsx
+import { Metadata } from 'next'
+ 
+export const metadata: Metadata = {
+  title: 'Products',
+}
+ 
+export default function Page() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+        <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left md:gap-10">
+            <h1 className='text-4xl font-extrabold'>Products</h1>
 
+         </div>
+    </main>
+  )
+}
 
 ```
 
+![](https://storage.googleapis.com/zenn-user-upload/54aa6315092e-20230804.png)
+
 コピーしたコードを、貼り付けます。
 
-```diff:tsx app/products/page.tsx
+```diff ts:app/products/page.tsx
+export default function Page() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+        <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left md:gap-10">
+            <h1 className='text-4xl font-extrabold'>Products</h1>
++            <script async
++                src="https://js.stripe.com/v3/buy-button.js">
++            </script>
+
++            <stripe-buy-button
++                buy-button-id="buy_btn_xxxx"
++                publishable-key="pk_test_xxxxxx"
++            >    
++            </stripe-buy-button>
+        </div>
+    </main>
+  )
+}
 
 ```
 
 これでStripeに登録した商品を表示できました。
+
+![](https://storage.googleapis.com/zenn-user-upload/eadac29a7f35-20230804.png)
 
 :::message
 ***[Advanced] 複数の商品を登録しよう***
 
 前のステップで、複数の商品を登録された方は、このステップを繰り返して商品一覧を作ってみましょう。
 
-[@todo]
+Buy Buttonを複数追加する場合は、`script`タグは1ページに1つだけでOKです。
+
+
+```diff:tsx app/products/page.tsx
+export default function Page() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+        <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
+            <h1 className='text-4xl font-extrabold'>Products</h1>
+            <script async
+                src="https://js.stripe.com/v3/buy-button.js">
+            </script>
+            <stripe-buy-button
+                buy-button-id="buy_btn_xxxx"
+                publishable-key="pk_test_xxxxxx"
+            >    
+            </stripe-buy-button>
+
++            <stripe-buy-button
++                buy-button-id="buy_btn_xxxx"
++                publishable-key="pk_test_xxxxxx"
++            >    
++            </stripe-buy-button>
+        </div>
+    </main>
+  )
+}
+```
+
+![](https://storage.googleapis.com/zenn-user-upload/174da718a960-20230804.png)
+
 :::
+
+### TypeScriptのエラーを解消する
+
+TypeScriptで開発している場合、次の型に関するエラーが発生します。
+
+```
+./app/products/page.tsx:17:9
+Type error: Property 'stripe-buy-button' does not exist on type 'JSX.IntrinsicElements'.
+```
+
+このエラーを解消するには、`types/stripe.d.ts`ファイルを追加しましょう。
+
+```ts:types/stripe.d.ts
+declare namespace JSX {
+    interface IntrinsicElements {
+      'stripe-buy-button': {
+        'buy-button-id': string;
+        'publishable-key': string;
+        children: unknown;
+      };
+    }
+  }
+```
+
+これでエラーがなくなります。
 
 
 ## Stripeのテストカード情報で、実際に注文してみよう

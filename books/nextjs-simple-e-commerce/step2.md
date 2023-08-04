@@ -353,30 +353,117 @@ Create `app/products/page.tsx`.
 
 Let's create the layout for the product page.
 
-```tsx app/products/page.tsx
 
+```ts:app/products/page.tsx
+import { Metadata } from 'next'
+ 
+export const metadata: Metadata = {
+  title: 'Products',
+}
+ 
+export default function Page() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+        <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left md:gap-10">
+            <h1 className='text-4xl font-extrabold'>Products</h1>
+
+         </div>
+    </main>
+  )
+}
 
 ```
+
+![](https://storage.googleapis.com/zenn-user-upload/54aa6315092e-20230804.png)
 
 And paste the copied code.
 
 ```diff:tsx app/products/page.tsx
+export default function Page() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+        <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left md:gap-10">
+            <h1 className='text-4xl font-extrabold'>Products</h1>
++            <script async
++                src="https://js.stripe.com/v3/buy-button.js">
++            </script>
 
++            <stripe-buy-button
++                buy-button-id="buy_btn_xxxx"
++                publishable-key="pk_test_xxxxxx"
++            >    
++            </stripe-buy-button>
+        </div>
+    </main>
+  )
+}
 ```
 
 Now we were able to display the products registered with Stripe.
 
-
-[@TODO]
+![](https://storage.googleapis.com/zenn-user-upload/eadac29a7f35-20230804.png)
 
 :::message
 ***[Advanced] Advanced Register Multiple Products***
 
 For those who registered multiple products in the previous step, let's try repeating this step to create a product list.
 
-[@todo]
+When adding multiple Buy Buttons, you don't have to add more `script` tag per page.
+
+```diff:tsx app/products/page.tsx
+export default function Page() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+        <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left md:gap-10">
+            <h1 className='text-4xl font-extrabold'>Products</h1>
+            <script async
+                src="https://js.stripe.com/v3/buy-button.js">
+            </script>
+            <stripe-buy-button
+                buy-button-id="buy_btn_xxxx"
+                publishable-key="pk_test_xxxxxx"
+            >    
+            </stripe-buy-button>
+
++            <stripe-buy-button
++                buy-button-id="buy_btn_xxxx"
++                publishable-key="pk_test_xxxxxx"
++            >    
++            </stripe-buy-button>
+        </div>
+    </main>
+  )
+}
+```
+
+![](https://storage.googleapis.com/zenn-user-upload/174da718a960-20230804.png)
+
 :::
 
+
+### Resolving TypeScript Errors
+When developing in TypeScript, you may encounter the following type-related error.
+
+```
+./app/products/page.tsx:17:9
+Type error: Property 'stripe-buy-button' does not exist on type 'JSX.IntrinsicElements'.
+```
+
+To resolve this error, let's add a`types/stripe.d.ts` file.
+
+```ts:types/stripe.d.ts
+declare namespace JSX {
+    interface IntrinsicElements {
+      'stripe-buy-button': {
+        'buy-button-id': string;
+        'publishable-key': string;
+        children: unknown;
+      };
+    }
+  }
+```
+
+This will eliminate the error.
 
 ## Try Ordering with Stripe's Test Card Information
 
