@@ -474,11 +474,14 @@ Stripe has prepared multiple payment information exclusively for the test enviro
 https://stripe.com/docs/testing
 
 ### Let's Try Ordering with a Credit Card Payment
-Click the [Order] button on the product page.
 
-[]
+Click the [Buy] button on the product page.
+
+![](https://storage.googleapis.com/zenn-user-upload/eadac29a7f35-20230804.png)
 
 Stripe's redirect payment form will be displayed.
+
+![](https://storage.googleapis.com/zenn-user-upload/f58d3f162732-20230804.png)
 
 Here, enter the following card information.
 
@@ -490,18 +493,22 @@ Here, enter the following card information.
 |Name| `Demo customer`|
 |Email| `test@example.com`|
 
-[]
+![](https://storage.googleapis.com/zenn-user-upload/c4cc8b50de79-20230804.png)
 
 When you click the Order button, a test payment will be made with your credit card.
 
-[]
+![](https://storage.googleapis.com/zenn-user-upload/879e2e600bb7-20230804.png)
 
 If you look at the "Payments" tab on the Stripe dashboard, you'll see the order from [Demo customer].
+
+![](https://storage.googleapis.com/zenn-user-upload/f84077cacd4a-20230804.png)
 
 :::message
 **[Advanced] Simulating Payment Failure and Fraud**
 
 With Stripe, you can also test situations such as "When credit card balance is insufficient" or "When the product does not arrive and a complaint is received by the credit card company".
+
+![](https://storage.googleapis.com/zenn-user-upload/ed8b802b5d00-20230804.png)
 
 We have picked up three test cases from the documentation site, so please give them a try.
 

@@ -478,9 +478,11 @@ https://stripe.com/docs/testing
 
 商品ページで[注文]ボタンをクリックしましょう。
 
-[]
+![](https://storage.googleapis.com/zenn-user-upload/eadac29a7f35-20230804.png)
 
 Stripeのリダイレクト型決済フォームが表示されます。
+
+![](https://storage.googleapis.com/zenn-user-upload/f58d3f162732-20230804.png)
 
 ここで、以下のカード情報を入力しましょう。
 
@@ -492,19 +494,22 @@ Stripeのリダイレクト型決済フォームが表示されます。
 |Name| `Demo customer`|
 |Email| `test@example.com`|
 
-[]
+![](https://storage.googleapis.com/zenn-user-upload/c4cc8b50de79-20230804.png)
 
 注文ボタンをクリックすると、クレジットカードでテスト支払いが行われます。
 
-[]
+![](https://storage.googleapis.com/zenn-user-upload/879e2e600bb7-20230804.png)
 
 Stripeダッシュボードの[支払い]タブをみると、`Demo customer`からの注文が表示されます。
+
+![](https://storage.googleapis.com/zenn-user-upload/f84077cacd4a-20230804.png)
 
 :::message
 **[Advanced] 決済失敗や不正利用をシミュレーションしよう**
 
 Stripeでは、「クレジットカードの利用残高が不足している場合」や「商品が届かないと、クレジットカード会社にクレームが届いた場合」などのテストもできます。
 
+![](https://storage.googleapis.com/zenn-user-upload/ed8b802b5d00-20230804.png)
 
 ドキュメントサイトから、３パターンのテストケースをピックアップしましたので、ぜひお試しください。
 
