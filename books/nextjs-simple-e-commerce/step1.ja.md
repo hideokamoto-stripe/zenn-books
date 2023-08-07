@@ -114,13 +114,30 @@ This pairing code verifies your authentication with Stripe.
 Press Enter to open the browser (^C to quit)
 ```
 
+:::message
+**すでに別アカウントでログイン済みの場合**
+Stripe CLIでは、`--project-name`を利用して複数のStripeアカウントに接続できます。
+デフォルトの接続先アカウントを別のStripeアカウントにしたい場合は、これ以降登場する`stripe`コマンドを次のように変更しましょう。
+
+```bash
+stripe --project-name demo-furni
+```
+
+**例: 顧客一覧を取得する**
+
+```bash
+stripe --project-name demo-furni customers list
+```
+
+:::
+
 Stripe Dashboardにログインしている状態であれば、以下の画像のようにアクセス権の確認画面が表示されます。
 
-{IMG}
+![](https://storage.googleapis.com/zenn-user-upload/d5ecd73d2edf-20230731.png)
 
 [アクセスを許可]をクリックすると、完了画面が表示されます。
 
-{IMG}
+![](https://storage.googleapis.com/zenn-user-upload/8d56b179f6a7-20230731.png)
 
 Stripe CLIの画面に戻ると、接続が成功したことが英文で表示されています。
 

@@ -113,6 +113,22 @@ This pairing code verifies your authentication with Stripe.
 Press Enter to open the browser (^C to quit)  
 ```
 
+:::message
+**In case you are already logged in with a different account**
+In Stripe CLI, you can connect to multiple Stripe accounts using --project-name.
+If you want to change the default connected account to another Stripe account, modify the stripe command that appears from now on as follows.
+
+```bash
+stripe --project-name demo-furni
+```
+
+**Example: Getting a list of customers**
+
+```bash
+stripe --project-name demo-furni customers list
+```
+:::
+
 If you are already logged in to the Stripe Dashboard, you'll see an access permission confirmation screen like the one below.
 
 ![](https://storage.googleapis.com/zenn-user-upload/d5ecd73d2edf-20230731.png)
