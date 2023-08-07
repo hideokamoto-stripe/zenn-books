@@ -13,9 +13,10 @@ APIキーを確認するには、ダッシュボードの[開発者]メニュー
 
 続いて、左側のメニューから[APIキー]をクリックしましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/6fce96bb18c1-20220419.png)
+![](https://storage.googleapis.com/zenn-user-upload/25080b93fe5b-20230807.png)
 
-### Tips: Stripe 3つのAPIキー
+:::message
+**Tips: Stripe 3つのAPIキー**
 
 APIキーには3つのAPIキーが存在します。
 
@@ -25,6 +26,7 @@ APIキーには3つのAPIキーが存在します。
 
 公開可能キーとシークレットキーの２つがあれば、Stripeを利用したアプリの開発が可能です。
 ただし、より安全にStripeアカウントを運用したい場合は、シークレットキーの代わりに制限付きのキーを利用することをお勧めします。
+:::
 
 ### 制限付きのキーを作成しよう
 
@@ -34,7 +36,7 @@ APIキーには3つのAPIキーが存在します。
 
 [キーの名前]には[ec-demo]を入力しましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/5002c678fb2c-20220419.png)
+![](https://storage.googleapis.com/zenn-user-upload/9555a316cccf-20230807.png)
 
 その後、[リソースタイプ]と[権限]を以下のように設定します。
 
