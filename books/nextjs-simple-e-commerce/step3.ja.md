@@ -16,6 +16,68 @@ e-commerceサイトでは、顧客が商品を注文した後に、商品の準�
 
 ## Next.js(v13 App Router)で、REST APIを追加する
 
+まずは、APIを作成しましょう。
+
+`app/api/webhook/route.ts`ファイルを作成し、次のコードを追加します。
+
+```ts:app/api/webhook/route.ts
+import { NextResponse } from "next/server";
+
+export async function POST() {
+  return NextResponse.json({
+      message: "Hello! Stripe Webhook."
+  })
+ }
+```
+
+Next.jsのApp Routerでは、「`ディレクトリ名`がAPIのパス」になり、「`route.ts`が配置されていれば、ファイル内のメソッドに対応する関数（`POST`, `GET`など）が実行される」動きをします。
+
+https://nextjs.org/docs/app/building-your-application/routing
+
+今回は、`/api/webhook`に対する`POST`リクエストを処理するので、`app/api/webhook/route.ts`ファイルに`POST`関数を配置しました。
+
+次のようなcURLコマンドを実行して、`"Hello! Stripe Webhook."`が表示されれば成功です。
+
+```bash
+ curl -XPOST http://localhost:3000/api/webhook
+
+{
+  "message": "Hello! Stripe Webhook."
+}
+```
+
+### リクエスト内容を確認する方法
+
+Stripeなどから送信されたデータを確認するには、`POST`関数の引数をみます。
+
+`app/api/webhook/route.ts`ファイルを、次のように変更しましょう。
+
+```diff ts:app/api/webhook/route.ts
+-export async function POST() {
++export async function POST(request: Request) {
++  const body = await request.json()
++  console.log(JSON.stringify(body, null, 2))
+  return NextResponse.json({
+-      message: "Hello! Stripe Webhook."
++      message: `Hello ${body.name ?? "there"}!`
+  })
+ }
+```
+
+JSONで送信されたデータは、`request.json()`から取得できます。
+
+次のcURLコマンドで、APIを呼び出してみましょう。
+
+```bash
+ curl -XPOST http://localhost:3000/api/webhook -d '{"name": "John"}'
+{
+  "message": "Hello John!"
+}
+```
+
+送信した名前がレスポンスに含まれていることが確認できます。
+
+
 ## Stripe CLIで、StripeのWebhookイベントをNext.jsに中継する
 
 APIの準備ができました。
@@ -29,7 +91,7 @@ StripeのWebhookを利用することで、決済の完了や失敗・サブス�
 次のコマンドを実行しましょう。
 
 ```bash
-stripe listen --forward-to http://locahost:3000/api/webhook
+stripe listen --forward-to http://localhost:3000/api/webhook
 ```
 
 `Ready`と表示されれば、成功です。
@@ -45,15 +107,55 @@ Next.jsで作成したAPIにイベントが届いているかを確認しまし�
 Stripe CLIからWebhookイベントを送信します。
 
 ```bash
-
+stripe trigger checkout.session.completed
 ```
 
-`next dev`や`npm run dev`を実行しているターミナル画面に、次のようなイベントログが表示されれば成功です。
+次のようにStripeのAPI呼び出しのログがCLI実行画面に表示されます。
+
+```bash
+Setting up fixture for: product
+Running fixture for: product
+Setting up fixture for: price
+Running fixture for: price
+Setting up fixture for: checkout_session
+Running fixture for: checkout_session
+Setting up fixture for: payment_page
+Running fixture for: payment_page
+Setting up fixture for: payment_method
+Running fixture for: payment_method
+Setting up fixture for: payment_page_confirm
+Running fixture for: payment_page_confirm
+Trigger succeeded! Check dashboard for event details.
+```
+
+また、`stripe listen`を実行しているターミナル画面では、Webhookの送信結果が表示されます。
+
+```bash
+2023-08-07 12:04:06   --> product.created [evt_1NcJjmLQkVoOEzC2Fbwk9riN]
+2023-08-07 12:04:06  <--  [200] POST http://localhost:3000/api/webhook [evt_1NcJjmLQkVoOEzC2Fbwk9riN]
+```
+
+そして`next dev`や`npm run dev`を実行しているターミナル画面に、次のようなイベントログが表示されれば成功です。
 
 ```log
-
-
+{
+  "id": "evt_3NcJjpLQkVoOEzC20xKExGCI",
+  "object": "event",
+  "api_version": "2022-11-15",
+  "created": 1691377449,
+  "data": {
+    "object": {
+      "id": "pi_3NcJjpLQkVoOEzC20n0doDzG",
+      "object": "payment_intent",
+      "amount": 3000,
+      "amount_capturable": 0,
+      "amount_details": {
+        "tip": {}
+      },
+...
 ```
+
+これでStripeアカウント内で発生した様々なイベントと、開発中のシステムとの連携の準備ができました。
 
 ## APIリクエストが、「Stripeから送信されたものか」を検証する
 
@@ -61,9 +163,9 @@ StripeのようなSaaSから送信されるWebhookとシステムを連携する
 
 誰でもAPIを呼び出せる状態では、「偽の注文イベントを送信する」などの不正利用を受ける恐れがあります。
 
+**偽の注文データを送信する例**
 ```bash
-// 偽の注文データを送信する例
-@TODO
+curl -XPOST http://localhost:3000/api/webhook -d '{ "id": "evt_3NcJjpLQkVoOEzC20xKExGCI", "object": "event", "api_version": "2022-11-15", "created": 1691377449, "data": { "object": { "id": "pi_3NcJjpLQkVoOEzC20n0doDzG", "object": "payment_intent", "amount": 3000, "amount_capturable": 0, "amount_details": { "tip": {} } } } }' -H 'Content-Type: application/json'
 ```
 
 Stripeでは、Webhook用の署名シークレットとシークレットAPIキーの2つを利用して、リクエストを検証します。

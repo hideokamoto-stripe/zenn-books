@@ -17,6 +17,67 @@ Let's proceed with the development flow ... such as
 :::
 
 ## Adding a REST API with Next.js(v13 App Router)
+First, let's create the API.
+
+Create the app/api/webhook/route.ts file and add the following code:
+
+```ts:app/api/webhook/route.ts
+import { NextResponse } from "next/server";
+
+export async function POST() {
+  return NextResponse.json({
+      message: "Hello! Stripe Webhook."
+  })
+ }
+```
+In Next.js's App Router, the "directory name" becomes the path of the API, and if route.ts is located, the function corresponding to the method in the file (`POST`, `GET`, etc.) will be executed.
+
+https://nextjs.org/docs/app/building-your-application/routing
+
+This time, to handle a `POST` request to `/api/webhook`, we placed the `POST` function in the `app/api/webhook/route.ts file`.
+
+You are successful if the message "Hello! Stripe Webhook." appears when executing a cURL command as follows:
+
+```bash
+ curl -XPOST http://localhost:3000/api/webhook
+
+{
+  "message": "Hello! Stripe Webhook."
+}
+```
+
+### How to Check Request Content
+To check the data sent from Stripe, etc., check the arguments of the `POST` function.
+
+Let's change the `app/api/webhook/route.ts` file as follows:
+
+
+```diff ts:app/api/webhook/route.ts
+-export async function POST() {
++export async function POST(request: Request) {
++  const body = await request.json()
++  console.log(JSON.stringify(body, null, 2))
+  return NextResponse.json({
+-      message: "Hello! Stripe Webhook."
++      message: `Hello ${body.name ?? "there"}!`
+  })
+ }
+```
+
+Data sent in JSON can be obtained from `request.json()`.
+
+Let's call the API with the following cURL command.
+
+
+```bash
+ curl -XPOST http://localhost:3000/api/webhook -d '{"name": "John"}'
+{
+  "message": "Hello John!"
+}
+```
+
+You can confirm that the name you sent is included in the response.
+
 
 ## Relaying Stripe Webhook Events to Next.js Using Stripe CLI
 
@@ -47,25 +108,66 @@ We will send a Webhook event from Stripe CLI.
 
 
 ```bash
-
+stripe trigger checkout.session.completed
 ```
-  
-If the following event logs are displayed on the terminal screen running `next dev` or `npm run dev`, then it indicates a successful implementation.
 
+The CLI execution screen will display logs from Stripe's API calls as follows:
+
+```bash
+Setting up fixture for: product
+Running fixture for: product
+Setting up fixture for: price
+Running fixture for: price
+Setting up fixture for: checkout_session
+Running fixture for: checkout_session
+Setting up fixture for: payment_page
+Running fixture for: payment_page
+Setting up fixture for: payment_method
+Running fixture for: payment_method
+Setting up fixture for: payment_page_confirm
+Running fixture for: payment_page_confirm
+Trigger succeeded! Check dashboard for event details.
+```
+
+Additionally, the terminal screen where `stripe listen` is being executed will display the results of the Webhook transmission.
+
+```bash
+2023-08-07 12:04:06   --> product.created [evt_1NcJjmLQkVoOEzC2Fbwk9riN]
+2023-08-07 12:04:06  <--  [200] POST http://localhost:3000/api/webhook [evt_1NcJjmLQkVoOEzC2Fbwk9riN]
+```
+
+And, if the following event logs are displayed on the terminal screen running `next dev` or `npm run dev`, then it indicates a successful implementation.
 
 ```log
-
+{
+  "id": "evt_3NcJjpLQkVoOEzC20xKExGCI",
+  "object": "event",
+  "api_version": "2022-11-15",
+  "created": 1691377449,
+  "data": {
+    "object": {
+      "id": "pi_3NcJjpLQkVoOEzC20n0doDzG",
+      "object": "payment_intent",
+      "amount": 3000,
+      "amount_capturable": 0,
+      "amount_details": {
+        "tip": {}
+      },
+...
 
 ```
+
+This completes the setup of your development system to coordinate with various events happening within your Stripe account.
+
 
 ## Verifying Whether an API Request was Sent from Stripe
 When integrating a system with a Webhook sent by a SaaS like Stripe, it is essential to "deny API requests that do not originate from that specific service."
 
 In a situation where anyone can call up the API, there's a potential risk of exploitation, such as the "transmission of fraudulent order events."
 
+**Example of sending fraudulent order data**
 ```bash
-// 偽の注文データを送信する例
-@TODO
+curl -XPOST http://localhost:3000/api/webhook -d '{ "id": "evt_3NcJjpLQkVoOEzC20xKExGCI", "object": "event", "api_version": "2022-11-15", "created": 1691377449, "data": { "object": { "id": "pi_3NcJjpLQkVoOEzC20n0doDzG", "object": "payment_intent", "amount": 3000, "amount_capturable": 0, "amount_details": { "tip": {} } } } }' -H 'Content-Type: application/json'
 ```
 
 To counter this, Stripe uses two tools - the Webhook's signature secret and secret API key. You'll learn how to apply these in order to verify the authenticity of incoming requests.
