@@ -350,6 +350,207 @@ curl -XPOST http://localhost:3000/api/webhook -d '{"name": "John"}'
 
 ## 注文内容を表示する処理を実装しよう
 
+社内の発送システムとの連携を行うチームに引き継ぎするため、「注文された商品や顧客情報」を取得する処理を実装しましょう。
+
+### サポートするWebhookイベント
+
+Stripeのリダイレクト型決済フォーム（Checkout / Payment Links + Buy button & Pricing Table）を利用している場合、注文が完了したことを知らせるイベントは次の3つです。
+
+- `checkout.session.completed`: Checkoutの注文フローが完了した状態を知らせるイベント
+- `checkout.session.async_payment_succeeded`: 銀行振込やコンビニ決済など「注文と決済が同時でないケース」にて、顧客の決済が完了した状態を知らせるイベント
+- `checkout.session.async_payment_failed`: 「期日までに、指定のコンビニエンスストアまたは銀行口座に入金がなかった」場合など、支払いが完了しなかった状態を知らせるイベント
+
+3つのイベント以外では、処理を行わないようにコードを変更しましょう。
+
+`app/api/webhook/route.ts`を次のように変更します。
+
+```diff ts:app/api/webhook/route.ts
+    const event = stripe.webhooks.constructEvent(
+      Buffer.from(body),
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET as string
+    );
+-    console.log({
+-      type: event.type,
+-      id: event.id,
+-    })
++    if ([
++      'checkout.session.completed',
++      'checkout.session.async_payment_succeeded',
++    ].includes(event.type)) {
++      // 決済が成功したケース
++    } else if (event.type === 'checkout.session.async_payment_failed') {
++      // 決済が失敗したケース
++    }
+    return NextResponse.json({
+      message: `Hello Stripe webhook!`
+    });
+```
+
+### 「支払いが完了した注文」のみを処理するように実装しよう
+
+利用できる決済手段を増やすことは、e-commerceサイトを利用する顧客層の拡大にもつながります。
+
+クレジットカード以外の決済もサポートできるようにするため、「決済まで完了した注文のみ、発送処理を開始する」仕組みを用意しましょう。
+
+銀行振込などの「顧客による追加のアクションが必要な決済」では、`checkout.session.completed`イベントが発生した時点で、決済が完了していません。
+
+ただし、クレジットカード決済など、その場で決済まで完了しているイベントでは、`checkout.session.async_payment_succeeded`イベントは発生しません。
+
+そのため、両方のイベントをサポートする処理が必要です。
+
+`app/api/webhook/route.ts`を次のように変更しましょう。
+
+```diff ts:app/api/webhook/route.ts
+    const event = stripe.webhooks.constructEvent(
+      Buffer.from(body),
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET as string
+    );
+    if ([
+      'checkout.session.completed',
+      'checkout.session.async_payment_succeeded',
+    ].includes(event.type)) {
+      // 決済が成功したケース
++      const data = event.data.object as Stripe.Checkout.Session
++      if (data.payment_status === 'paid') {
+
++      }
+    } else if (event.type === 'checkout.session.async_payment_failed') {
+      // 決済が失敗したケース
+    }
+    return NextResponse.json({
+      message: `Hello Stripe webhook!`
+    });
+```
+
+これで、「支払いステータスが`paid`ではない注文は処理しない」動きをサポートできました。
+
+`checkout.session.completed`と`checkout.session.async_payment_succeeded`両方をサポートすることで、複数の決済手段にもサポートしやすくなっています。
+
+### Webhookイベントデータから、顧客情報を取得する
+
+発送システムに連携する条件設定が完了しましたので、送信する情報を取得します。
+
+顧客情報については、イベントデータから取得できます。
+
+
+`app/api/webhook/route.ts`を次のように変更しましょう。
+
+```diff ts:app/api/webhook/route.ts
+    if ([
+      'checkout.session.completed',
+      'checkout.session.async_payment_succeeded',
+    ].includes(event.type)) {
+      // 決済が成功したケース
+      const data = event.data.object as Stripe.Checkout.Session
+      if (data.payment_status === 'paid') {
++        const customerDetails = data.customer_details
++        console.log({
++          name: customerDetails?.name,
++          address: customerDetails?.address,
++          email: customerDetails?.email,
++          phone: customerDetails?.phone,
++          amount_total: data.amount_total,
++          currency: data.currency
++        })
+      }
+    } else if (event.type === 'checkout.session.async_payment_failed') {
+      // 決済が失敗したケース
+    }
+```
+
+商品注文イベントを、Stripe CLIで送信してみましょう。
+
+```bash
+ stripe trigger checkout.session.completed
+```
+
+Next.jsアプリのログに、注文金額や住所が表示されます。
+
+```bash
+{
+  name: 'Jenny Rosen',
+  address: {
+    city: 'South San Francisco',
+    country: 'US',
+    line1: '354 Oyster Point Blvd',
+    line2: null,
+    postal_code: '94080',
+    state: 'CA'
+  },
+  email: 'stripe@example.com',
+  phone: null,
+  amount_total: 3000,
+  currency: 'usd'
+}
+```
+
+### Stripe APIでカートの中身を取得する
+
+最後にカートの中身についても取得しましょう。
+
+こちらは、Webhookイベントの「Checkout Session ID」を利用して、Stripe APIを呼び出します。
+
+`app/api/webhook/route.ts`を次のように変更しましょう。
+
+```diff ts:app/api/webhook/route.ts
+    if ([
+      'checkout.session.completed',
+      'checkout.session.async_payment_succeeded',
+    ].includes(event.type)) {
+      // 決済が成功したケース
+      const data = event.data.object as Stripe.Checkout.Session
+
+      if (data.payment_status === 'paid') {
+        const customerDetails = data.customer_details
+        console.log({
+          name: customerDetails?.name,
+          address: customerDetails?.address,
+          email: customerDetails?.email,
+          phone: customerDetails?.phone,
+          amount_total: data.amount_total,
+          currency: data.currency
+        })
++        const { data: cartItems } = await stripe.checkout.sessions.listLineItems(data.id, {
++          expand: ['data.price.product']
++        })
++        cartItems.forEach(item => {
++          const product = (item.price?.product as Stripe.Product)
++          console.log({
++            product: product.name,
++            unit_amount: item.price?.unit_amount,
++            currency: item.price?.currency,
++            quantity: item.quantity,
++            amount_total: item.amount_total
++          })
++        })  
+      }
+    } else if (event.type === 'checkout.session.async_payment_failed') {
+      // 決済が失敗したケース
+    }
+```
+
+商品注文イベントを、Stripe CLIで送信してみましょう。
+
+```bash
+ stripe trigger checkout.session.completed
+```
+
+Next.jsアプリのログに、カートの商品情報が表示されました。
+
+```bash
+{
+  product: 'myproduct',
+  unit_amount: 1500,
+  currency: 'eur',
+  quantity: 2,
+  amount_total: 3000
+}
+```
+
+あとはこれらのデータを利用して、引き継ぎしたチームが開発を続けるだけです。
+
 ## おさらい
 
 - Next.js(v13)のApp Routerでは、`app/[パス名]/route.ts`でAPIを追加できる

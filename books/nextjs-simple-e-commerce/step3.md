@@ -350,6 +350,204 @@ Now, you are ready to safely operate your API integrated with Stripe.
 
 ## Implement the Process to Display Order Details
 
+Let's implement the process to retrieve "ordered products and customer information" to hand over to the team that will integrate with the in-house shipping system.
+
+### Supported Webhook Events
+
+If you are using Stripe's redirect type payment form (Checkout / Payment Links + Buy button & Pricing Table), there are three events that indicate that an order has been completed:
+
+- `checkout.session.completed`:Event indicating that the order flow on Checkout is complete.
+- `checkout.session.async_payment_succeeded`: In cases where "ordering and payment are not simultaneous", such as bank transfers or convenience store payments, it indicates that customer's payment is complete.
+- `checkout.session.async_payment_failed`: It indicates a state of non-payment, such as when there is no deposit to a specific convenience store or bank account by the due date.
+
+It indicates a state of non-payment, such as when there is no deposit to a specific convenience store or bank account by the due date.
+
+Update `app/api/webhook/route.ts` as following:
+
+```diff ts:app/api/webhook/route.ts
+    const event = stripe.webhooks.constructEvent(
+      Buffer.from(body),
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET as string
+    );
+-    console.log({
+-      type: event.type,
+-      id: event.id,
+-    })
++    if ([
++      'checkout.session.completed',
++      'checkout.session.async_payment_succeeded',
++    ].includes(event.type)) {
++      // Payment Succeeded
++    } else if (event.type === 'checkout.session.async_payment_failed') {
++      // Payment Failuer
++    }
+    return NextResponse.json({
+      message: `Hello Stripe webhook!`
+    });
+```
+### Implement to only process 'orders that have completed payment'
+
+Increasing the available payment methods also leads to an expansion of the customer base using the e-commerce site.
+
+To support payments other than credit cards, let's prepare a mechanism to 'start the shipping process only for orders that have been completed up to the payment'.
+
+In payments that require 'additional actions by the customer' such as bank transfers, the payment is not complete when the `checkout.session.completed` event occurs.
+
+However, in events that are completed up to the payment on the spot, such as credit card payments, the `checkout.session.async_payment_succeeded` event does not occur.
+
+Therefore, it is necessary to support both events.
+
+Update `app/api/webhook/route.ts` as following:
+
+```diff ts:app/api/webhook/route.ts
+    const event = stripe.webhooks.constructEvent(
+      Buffer.from(body),
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET as string
+    );
+    if ([
+      'checkout.session.completed',
+      'checkout.session.async_payment_succeeded',
+    ].includes(event.type)) {
++      const data = event.data.object as Stripe.Checkout.Session
++      if (data.payment_status === 'paid') {
+
++      }
+    } else if (event.type === 'checkout.session.async_payment_failed') {
+
+    }
+    return NextResponse.json({
+      message: `Hello Stripe webhook!`
+    });
+```
+
+Now you can support the feature of "not processing orders whose payment status is not `paid`".
+
+By supporting both `checkout.session.completed` and `checkout.session.async_payment_succeeded`, it is easier to support multiple payment methods.
+
+### Obtaining Customer Information from Webhook Event Data
+Now that the conditions for integrating with the shipping system have been set, let's retrieve the information to send.
+
+Customer information can be obtained from the event data.
+
+Update `app/api/webhook/route.ts` as following:
+
+
+```diff ts:app/api/webhook/route.ts
+    if ([
+      'checkout.session.completed',
+      'checkout.session.async_payment_succeeded',
+    ].includes(event.type)) {
+      const data = event.data.object as Stripe.Checkout.Session
+      if (data.payment_status === 'paid') {
++        const customerDetails = data.customer_details
++        console.log({
++          name: customerDetails?.name,
++          address: customerDetails?.address,
++          email: customerDetails?.email,
++          phone: customerDetails?.phone,
++          amount_total: data.amount_total,
++          currency: data.currency
++        })
+      }
+    } else if (event.type === 'checkout.session.async_payment_failed') {
+        
+    }
+```
+
+Let's try sending a product order event using Stripe CLI.
+
+```bash
+ stripe trigger checkout.session.completed
+```
+
+The order amount and address will be displayed in the log of the Next.js app.
+
+```bash
+{
+  name: 'Jenny Rosen',
+  address: {
+    city: 'South San Francisco',
+    country: 'US',
+    line1: '354 Oyster Point Blvd',
+    line2: null,
+    postal_code: '94080',
+    state: 'CA'
+  },
+  email: 'stripe@example.com',
+  phone: null,
+  amount_total: 3000,
+  currency: 'usd'
+}
+```
+
+### Retrieving the Cart Contents via the Stripe API
+
+Finally, let's also retrieve the contents of the cart.
+
+To do this, we will call the Stripe API using the "Checkout Session ID" from the webhook event
+
+Update `app/api/webhook/route.ts` as following:
+
+```diff ts:app/api/webhook/route.ts
+    if ([
+      'checkout.session.completed',
+      'checkout.session.async_payment_succeeded',
+    ].includes(event.type)) {
+      // 決済が成功したケース
+      const data = event.data.object as Stripe.Checkout.Session
+
+      if (data.payment_status === 'paid') {
+        const customerDetails = data.customer_details
+        console.log({
+          name: customerDetails?.name,
+          address: customerDetails?.address,
+          email: customerDetails?.email,
+          phone: customerDetails?.phone,
+          amount_total: data.amount_total,
+          currency: data.currency
+        })
++        const { data: cartItems } = await stripe.checkout.sessions.listLineItems(data.id, {
++          expand: ['data.price.product']
++        })
++        cartItems.forEach(item => {
++          const product = (item.price?.product as Stripe.Product)
++          console.log({
++            product: product.name,
++            unit_amount: item.price?.unit_amount,
++            currency: item.price?.currency,
++            quantity: item.quantity,
++            amount_total: item.amount_total
++          })
++        })  
+      }
+    } else if (event.type === 'checkout.session.async_payment_failed') {
+      // 決済が失敗したケース
+    }
+```
+
+
+Try sending a product order event using Stripe CLI.
+
+```bash
+ stripe trigger checkout.session.completed
+```
+
+The product information of the cart is displayed in the log of the Next.js app.
+
+```bash
+{
+  product: 'myproduct',
+  unit_amount: 1500,
+  currency: 'eur',
+  quantity: 2,
+  amount_total: 3000
+}
+```
+
+All that's left is for the team taking over to continue developing using this data.
+
 ## Quick recap
 - In the App Router of Next.js(v13), you can add an API with `app/[path name]/route.ts`
 - Which methods to support can be defined by `export function [method name]`
