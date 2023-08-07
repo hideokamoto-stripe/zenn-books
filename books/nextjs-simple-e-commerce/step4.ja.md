@@ -14,7 +14,7 @@ title: "Step 3: Stripe APIを利用して、商品ページを動的に生成し
 
 アプリケーションのコードを変更せず、カート機能の追加にも対応できるように、Stripeとの連携をアップデートしましょう。
 
-## 0: 型情報ファイルを作成しよう
+## 1: 型情報ファイルを作成しよう
 
 APIとReact両方で利用する、カスタムな型定義を追加します。
 
@@ -28,7 +28,7 @@ export type ProductWithPrices = Stripe.Product & {
 }
 ```
 
-## 1: 商品情報をStripe APIから取得しよう
+## 2: 商品情報をStripe APIから取得しよう
 
 まずは商品情報をStripeから取得しましょう。
 
@@ -267,7 +267,7 @@ https://nextjs.org/docs/app/building-your-application/rendering/static-and-dynam
 ![](https://storage.googleapis.com/zenn-user-upload/74808493c7f6-20230807.png)
 
 
-## 2: Stripe Checkoutを利用して、注文ボタンを表示しよう
+## 3: Stripe Checkoutを利用して、注文ボタンを表示しよう
 
 最後に、表示した商品を注文する処理を追加しましょう。
 

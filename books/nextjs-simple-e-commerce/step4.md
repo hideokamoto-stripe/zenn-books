@@ -264,7 +264,7 @@ After reload the page, the display will switch from the Buy Button to your custo
 ![](https://storage.googleapis.com/zenn-user-upload/74808493c7f6-20230807.png)
 
 
-## 2: Use Stripe Checkout to Display an Order Button
+## 3: Use Stripe Checkout to Display an Order Button
 Finally, let's add the process of ordering the product we have displayed.
 
 
