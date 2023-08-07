@@ -78,6 +78,20 @@ Let's call the API with the following cURL command.
 
 You can confirm that the name you sent is included in the response.
 
+:::message
+
+**Tips: Do not place route.ts and page.tsx in the same directory**
+
+- `GET /dummy`: display UI
+- `POST /dummy`: call the REST API
+
+In such design, both route.ts and page.tsx would need to be placed in the `app/dummy` directory.
+However, as of August 2023, these two files cannot be placed simultaneously.
+
+https://nextjs.org/docs/app/building-your-application/routing/route-handlers#route-resolution
+
+To reduce risk of conflicts, it is recommended to group APIs under the `app/api` directory, same as in Next.js v12 and earlier.
+:::
 
 ## Relaying Stripe Webhook Events to Next.js Using Stripe CLI
 
@@ -229,29 +243,106 @@ Let's add the acquired API key to your `.env.local` file.
 
 ```diff:.env.local
 STRIPE_WEBHOOK_SECRET=wsec_xxx
-+STRIPE_API_KEY=rk_test_xxxxx
++STRIPE_SECRET_API_KEY=rk_test_xxxxx
+```
+
+### Install Stripe SDK
+
+Finally, let's install the SDK to be used for verification processing.
+
+```bash
+npm i stripe
 ```
 
 
 ### Adding Signature Verification Process to Next.js API
 Now, let's enhance our Next.js API by adding a verification process to determine if the API is being called from a Stripe Webhook. This will be done utilizing the signature secret we retrieved in the previous step.
 
-```diff ts:t.ts
+Please rewrite `app/api/webhook/route.ts` as follows:
 
+```ts:app/api/webhook/route.ts
+import { NextResponse } from "next/server";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_API_KEY as string, {
+  apiVersion: '2022-11-15'
+})
+
+export async function POST(request: Request) {
+  const signature = request.headers.get("stripe-signature");
+  if (!signature) {
+    return NextResponse.json({
+      message: 'Bad request'
+    }, {
+      status: 400
+    }) 
+  }
+  try {
+    const body = await request.arrayBuffer();
+    const event = stripe.webhooks.constructEvent(
+      Buffer.from(body),
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET as string
+    );
+    console.log({
+      type: event.type,
+      id: event.id,
+    })
+    return NextResponse.json({
+      message: `Hello Stripe webhook!`
+    });
+  } catch (err) {
+    const errorMessage = `⚠️  Webhook signature verification failed. ${(err as Error).message}`
+    console.log(errorMessage);
+    return new Response(errorMessage, {
+      status: 400
+    })
+  }
+}
 ```
 
-  
-A successful implementation can be verified by sending a Webhook event from Stripe CLI and observing no errors from the Next.js API.
+:::message
+**Code Explanation**
+
+First, get the `stripe-signature` from the header. This is what Stripe attaches when it calls the API.
+
+This value and the Body of the API request are used to verify whether or not the request is from Stripe.
+
+It should be noted that the Body that can be obtained with `request.json()` or `request.text()` in Next.js has been processed to make it easier to handle within the app.
+
+The Body used by the Stripe SDK requires the Body before it was processed, so we have added a process to revert it using Buffer.
+:::
+
+
+After saving the changes, if you transmit a webhook event from the Stripe CLI and no errors occur in the Next.js API, it is successful.
+
+**1: Command to send an event**
 
 ```bash
-
+ stripe --project-name demo-furni trigger payment_intent.succeeded
 ```
+
+**2: Example of the log displayed in the terminal where the `stripe listen` command is running**
+
+```bash
+2023-08-07 14:11:59  <--  [200] POST http://localhost:3000/api/webhook [evt_3NcLjVLQkVoOEzC20HbqByIJ]
+```
+
+**3: Example of the log displayed in the terminal where the `next dev` / `npm run dev` command is running**
+
+```bash
+{ type: 'charge.succeeded', id: 'evt_3NcLjVLQkVoOEzC20HbqByIJ' }
+```
+
 
 You will notice that any attempt to directly call the API results in error.
 
 
 ```bash
-
+curl -XPOST http://localhost:3000/api/webhook -d '{"name": "John"}'
+{
+  "message": "Bad request"
+}
 
 ```
   

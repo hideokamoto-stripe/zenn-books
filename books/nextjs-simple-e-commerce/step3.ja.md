@@ -46,6 +46,20 @@ https://nextjs.org/docs/app/building-your-application/routing
 }
 ```
 
+:::message
+**Tips: `route.ts`と`page.tsx`を同一ディレクトリに配置しない**
+
+- `GET /dummy`は、UIを表示する
+- `POST /dummy`は、REST APIを呼び出す
+
+このような設計にするには、`app/dummy`ディレクトリに`route.ts`と`page.tsx`両方を配置することになります。
+しかし2023/08時点では、この2ファイルを同時に配置することはできません。
+
+https://nextjs.org/docs/app/building-your-application/routing/route-handlers#route-resolution
+
+衝突リスクを減らすためにも、Next.js v12以前同様APIは`api`ディレクトリ配下にまとめることをお勧めします。
+:::
+
 ### リクエスト内容を確認する方法
 
 Stripeなどから送信されたデータを確認するには、`POST`関数の引数をみます。
@@ -232,7 +246,15 @@ APIキーには3つのAPIキーが存在します。
 
 ```diff:.env.local
 STRIPE_WEBHOOK_SECRET=wsec_xxx
-+STRIPE_API_KEY=rk_test_xxxxx
++STRIPE_SECRET_API_KEY=rk_test_xxxxx
+```
+
+### Install Stripe SDK
+
+最後に、検証処理に利用するSDKをインストールしましょう。
+
+```bash
+npm i stripe
 ```
 
 これで準備ができました。
@@ -241,23 +263,87 @@ STRIPE_WEBHOOK_SECRET=wsec_xxx
 
 取得した署名シークレットを利用して、Stripe WebhookからのAPI呼び出しかどうかを検証する処理を追加しましょう。
 
-```diff ts:t.ts
+`app/api/webhook/route.ts`を次のように書き換えてください。
 
+
+```ts:app/api/webhook/route.ts
+import { NextResponse } from "next/server";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_API_KEY as string, {
+  apiVersion: '2022-11-15'
+})
+
+export async function POST(request: Request) {
+  const signature = request.headers.get("stripe-signature");
+  if (!signature) {
+    return NextResponse.json({
+      message: 'Bad request'
+    }, {
+      status: 400
+    }) 
+  }
+  try {
+    const body = await request.arrayBuffer();
+    const event = stripe.webhooks.constructEvent(
+      Buffer.from(body),
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET as string
+    );
+    console.log({
+      type: event.type,
+      id: event.id,
+    })
+    return NextResponse.json({
+      message: `Hello Stripe webhook!`
+    });
+  } catch (err) {
+    const errorMessage = `⚠️  Webhook signature verification failed. ${(err as Error).message}`
+    console.log(errorMessage);
+    return new Response(errorMessage, {
+      status: 400
+    })
+  }
+}
+```
+:::message
+**コード解説**
+まずヘッダーから`stripe-signature`を取得します。これはStripeがAPIを呼び出す際に付与したものです。
+
+この値と、APIリクエストのBodyを利用して、「Stripeからのリクエストか否か」を検証します。
+
+なお、「Next.jsの、`request.json()`や`request.text()`で取得できるBody」は、アプリ内での取り扱いを簡単にするための処理がされています。
+
+「Stripe SDKが利用するBody」では、処理される前のBodyが必要ですので、`Buffer`などを利用して元に戻す処理を追加しています。
+:::
+
+変更を保存後、Stripe CLIからWebhookイベントを送信し、Next.jsのAPIにエラーが発生しなければ成功です。
+
+**1: イベントを送信するコマンド**
+```bash
+ stripe --project-name demo-furni trigger payment_intent.succeeded
 ```
 
-Stripe CLIからWebhookイベントを送信し、Next.jsのAPIにエラーが発生しなければ成功です。
+**2: `stripe listen`コマンド実行中のターミナルに表示されるログの例**
 
 ```bash
-
+2023-08-07 14:11:59  <--  [200] POST http://localhost:3000/api/webhook [evt_3NcLjVLQkVoOEzC20HbqByIJ]
 ```
 
-APIを直接呼び出そうとすると、エラーになることがわかります。
+**3: `next dev` / `npm run dev`コマンド実行中のターミナルに表示されるログの例**
 
 ```bash
-
-
+{ type: 'charge.succeeded', id: 'evt_3NcLjVLQkVoOEzC20HbqByIJ' }
 ```
 
+また、APIを直接呼び出そうとすると、エラーになることがわかります。
+
+```bash
+curl -XPOST http://localhost:3000/api/webhook -d '{"name": "John"}'
+{
+  "message": "Bad request"
+}
+```
 
 これでStripeと連携するAPIを安全に運用できる準備ができました。
 
