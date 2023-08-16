@@ -399,7 +399,31 @@ export default function Page() {
 }
 ```
 
-Now we were able to display the products registered with Stripe.
+### Resolving TypeScript Errors
+When developing in TypeScript, you may encounter the following type-related error.
+
+```
+./app/products/page.tsx:17:9
+Type error: Property 'stripe-buy-button' does not exist on type 'JSX.IntrinsicElements'.
+```
+
+To resolve this error, let's add a`types/stripe.d.ts` file.
+
+```ts:types/stripe.d.ts
+declare namespace JSX {
+    interface IntrinsicElements {
+      'stripe-buy-button': {
+        'buy-button-id': string;
+        'publishable-key': string;
+        children: unknown;
+      };
+    }
+  }
+```
+
+This will eliminate the error.
+
+And now, we were able to display the products registered with Stripe.
 
 ![](https://storage.googleapis.com/zenn-user-upload/eadac29a7f35-20230804.png)
 
@@ -440,30 +464,6 @@ export default function Page() {
 
 :::
 
-
-### Resolving TypeScript Errors
-When developing in TypeScript, you may encounter the following type-related error.
-
-```
-./app/products/page.tsx:17:9
-Type error: Property 'stripe-buy-button' does not exist on type 'JSX.IntrinsicElements'.
-```
-
-To resolve this error, let's add a`types/stripe.d.ts` file.
-
-```ts:types/stripe.d.ts
-declare namespace JSX {
-    interface IntrinsicElements {
-      'stripe-buy-button': {
-        'buy-button-id': string;
-        'publishable-key': string;
-        children: unknown;
-      };
-    }
-  }
-```
-
-This will eliminate the error.
 
 ## Try Ordering with Stripe's Test Card Information
 

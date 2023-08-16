@@ -69,15 +69,7 @@ brew install stripe/stripe-cli/stripe
 ```
 
 ### Installing on macOS / Windows
-For macOS and Windows, download from the latest GitHub release.
-
-https://github.com/stripe/stripe-cli/releases/latest
-
-For macOS, it's "stripe_X.X.X_mac-os_x86_64.tar.gz" and for Windows, it's "stripe_X.X.X_windows_x86_64.zip". Each OS has its own download file.
-
-After downloading, execute the file to make Stripe CLI available.
-
-For other environments' installation methods, please check the Stripe documentation.
+For macOS and Windows and the other environments' installation methods, please check the Stripe documentation.
 
 https://stripe.com/docs/stripe-cli#install
 

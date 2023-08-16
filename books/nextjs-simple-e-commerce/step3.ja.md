@@ -40,10 +40,6 @@ https://nextjs.org/docs/app/building-your-application/routing
 
 ```bash
  curl -XPOST http://localhost:3000/api/webhook
-
-{
-  "message": "Hello! Stripe Webhook."
-}
 ```
 
 :::message
@@ -84,13 +80,15 @@ JSONで送信されたデータは、`request.json()`から取得できます。
 
 ```bash
  curl -XPOST http://localhost:3000/api/webhook -d '{"name": "John"}'
+ ```
+
+送信した名前がレスポンスに含まれていることが確認できます。
+
+ ```bash
 {
   "message": "Hello John!"
 }
 ```
-
-送信した名前がレスポンスに含まれていることが確認できます。
-
 
 ## Stripe CLIで、StripeのWebhookイベントをNext.jsに中継する
 
@@ -321,7 +319,7 @@ export async function POST(request: Request) {
 
 **1: イベントを送信するコマンド**
 ```bash
- stripe --project-name demo-furni trigger payment_intent.succeeded
+ stripe trigger payment_intent.succeeded
 ```
 
 **2: `stripe listen`コマンド実行中のターミナルに表示されるログの例**
@@ -336,10 +334,15 @@ export async function POST(request: Request) {
 { type: 'charge.succeeded', id: 'evt_3NcLjVLQkVoOEzC20HbqByIJ' }
 ```
 
-また、APIを直接呼び出そうとすると、エラーになることがわかります。
+APIを直接呼び出してみましょう。
 
 ```bash
 curl -XPOST http://localhost:3000/api/webhook -d '{"name": "John"}'
+```
+
+エラーになることがわかります。
+
+```bash
 {
   "message": "Bad request"
 }
@@ -463,7 +466,7 @@ Stripeのリダイレクト型決済フォーム（Checkout / Payment Links + Bu
 商品注文イベントを、Stripe CLIで送信してみましょう。
 
 ```bash
- stripe trigger checkout.session.completed
+stripe trigger checkout.session.completed
 ```
 
 Next.jsアプリのログに、注文金額や住所が表示されます。
@@ -534,7 +537,7 @@ Next.jsアプリのログに、注文金額や住所が表示されます。
 商品注文イベントを、Stripe CLIで送信してみましょう。
 
 ```bash
- stripe trigger checkout.session.completed
+stripe trigger checkout.session.completed
 ```
 
 Next.jsアプリのログに、カートの商品情報が表示されました。

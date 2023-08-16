@@ -40,10 +40,6 @@ You are successful if the message "Hello! Stripe Webhook." appears when executin
 
 ```bash
  curl -XPOST http://localhost:3000/api/webhook
-
-{
-  "message": "Hello! Stripe Webhook."
-}
 ```
 
 ### How to Check Request Content
@@ -71,12 +67,15 @@ Let's call the API with the following cURL command.
 
 ```bash
  curl -XPOST http://localhost:3000/api/webhook -d '{"name": "John"}'
+```
+
+You can confirm that the name you sent is included in the response.
+
+```bash
 {
   "message": "Hello John!"
 }
 ```
-
-You can confirm that the name you sent is included in the response.
 
 :::message
 
@@ -105,7 +104,7 @@ We also understand that these processes aren't limited to the live environments.
 We'll run through the execution of the following commands:
 
 ```bash
-stripe listen --forward-to http://locahost:3000/api/webhook
+stripe listen --forward-to http://localhost:3000/api/webhook
 ```
 
 Once you see `Ready` displayed on your command line, you can celebrate a successful configuration setup! This sets the foundation for you to continue building and exploring in your local environment.
@@ -319,7 +318,7 @@ After saving the changes, if you transmit a webhook event from the Stripe CLI an
 **1: Command to send an event**
 
 ```bash
- stripe --project-name demo-furni trigger payment_intent.succeeded
+ stripe trigger payment_intent.succeeded
 ```
 
 **2: Example of the log displayed in the terminal where the `stripe listen` command is running**
@@ -334,12 +333,16 @@ After saving the changes, if you transmit a webhook event from the Stripe CLI an
 { type: 'charge.succeeded', id: 'evt_3NcLjVLQkVoOEzC20HbqByIJ' }
 ```
 
-
-You will notice that any attempt to directly call the API results in error.
+When you directly call the API:
 
 
 ```bash
 curl -XPOST http://localhost:3000/api/webhook -d '{"name": "John"}'
+```
+
+You'll get the following error:
+
+```bash
 {
   "message": "Bad request"
 }
