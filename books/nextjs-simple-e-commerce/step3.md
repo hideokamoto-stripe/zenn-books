@@ -1,25 +1,24 @@
 ---
-title: "Step 2: Developing a Next.js REST API and Integrating Order Processing"
+title: "Step 2: Next.js REST API の開発と注文処理の統合"
 ---
 
-In Step 1, we were able to prepare product registration and display, as well as a flow to the order page.
+Step1で、商品登録と表示、そして注文ページへの動線まで用意できました。
 
-In e-commerce sites, after a customer orders a product, it is necessary to prepare and ship the product.
+e-commerceサイトでは、顧客が商品を注文した後に、商品の準備や発送を行う必要があります。
 
-In order to send order information to the internal shipping system, let's develop a "Webhook API" that links the orders received from Stripe to the external system.
+社内の発送システムに注文情報を送信するため、Stripeで受け付けた注文を外部システムに連携する「Webhook API」を開発しましょう。
 
 :::message
-**Supplement on "Integration with internal systems"**
-In the workshop, we will develop up to the API that receives order information sent from Stripe.
-
-Let's proceed with the development flow ... such as 
-*"We prepare the mechanism to receive the order information, and the actual integration work is handled by another team."*
+**「社内システムとの連携」についての補足**
+ワークショップでは、「Stripeから送信された注文情報を受け取るAPI」までを開発します。
+「注文情報を受け取る仕組みまでを用意し、実際の連携作業は別チームが担当する」ような開発フロー・・・ということで進めましょう。
 :::
 
-## Adding a REST API with Next.js(v13 App Router)
-First, let's create the API.
+## Next.js(v13 App Router)で、REST APIを追加する
 
-Create the app/api/webhook/route.ts file and add the following code:
+まずは、APIを作成しましょう。
+
+`app/api/webhook/route.ts`ファイルを作成し、次のコードを追加します。
 
 ```ts:app/api/webhook/route.ts
 import { NextResponse } from "next/server";
@@ -30,23 +29,38 @@ export async function POST() {
   })
  }
 ```
-In Next.js's App Router, the "directory name" becomes the path of the API, and if route.ts is located, the function corresponding to the method in the file (`POST`, `GET`, etc.) will be executed.
+
+Next.jsのApp Routerでは、「`ディレクトリ名`がAPIのパス」になり、「`route.ts`が配置されていれば、ファイル内のメソッドに対応する関数（`POST`, `GET`など）が実行される」動きをします。
 
 https://nextjs.org/docs/app/building-your-application/routing
 
-This time, to handle a `POST` request to `/api/webhook`, we placed the `POST` function in the `app/api/webhook/route.ts file`.
+今回は、`/api/webhook`に対する`POST`リクエストを処理するので、`app/api/webhook/route.ts`ファイルに`POST`関数を配置しました。
 
-You are successful if the message "Hello! Stripe Webhook." appears when executing a cURL command as follows:
+次のようなcURLコマンドを実行して、`"Hello! Stripe Webhook."`が表示されれば成功です。
 
 ```bash
  curl -XPOST http://localhost:3000/api/webhook
 ```
 
-### How to Check Request Content
-To check the data sent from Stripe, etc., check the arguments of the `POST` function.
+:::message
+**Tips: `route.ts`と`page.tsx`を同一ディレクトリに配置しない**
 
-Let's change the `app/api/webhook/route.ts` file as follows:
+- `GET /dummy`は、UIを表示する
+- `POST /dummy`は、REST APIを呼び出す
 
+このような設計にするには、`app/dummy`ディレクトリに`route.ts`と`page.tsx`両方を配置することになります。
+しかし2023/08時点では、この2ファイルを同時に配置することはできません。
+
+https://nextjs.org/docs/app/building-your-application/routing/route-handlers#route-resolution
+
+衝突リスクを減らすためにも、Next.js v12以前同様APIは`api`ディレクトリ配下にまとめることをお勧めします。
+:::
+
+### リクエスト内容を確認する方法
+
+Stripeなどから送信されたデータを確認するには、`POST`関数の引数をみます。
+
+`app/api/webhook/route.ts`ファイルを、次のように変更しましょう。
 
 ```diff ts:app/api/webhook/route.ts
 -export async function POST() {
@@ -60,71 +74,55 @@ Let's change the `app/api/webhook/route.ts` file as follows:
  }
 ```
 
-Data sent in JSON can be obtained from `request.json()`.
+JSONで送信されたデータは、`request.json()`から取得できます。
 
-Let's call the API with the following cURL command.
-
+次のcURLコマンドで、APIを呼び出してみましょう。
 
 ```bash
  curl -XPOST http://localhost:3000/api/webhook -d '{"name": "John"}'
-```
+ ```
 
-You can confirm that the name you sent is included in the response.
+送信した名前がレスポンスに含まれていることが確認できます。
 
-```bash
+ ```bash
 {
   "message": "Hello John!"
 }
 ```
 
-:::message
+## Stripe CLIで、StripeのWebhookイベントをNext.jsに中継する
 
-**Tips: Do not place route.ts and page.tsx in the same directory**
+APIの準備ができました。
 
-- `GET /dummy`: display UI
-- `POST /dummy`: call the REST API
+次はこのAPIに、Stripe上で発生したイベントを送信する設定を行います。
 
-In such design, both route.ts and page.tsx would need to be placed in the `app/dummy` directory.
-However, as of August 2023, these two files cannot be placed simultaneously.
+StripeのWebhookを利用することで、決済の完了や失敗・サブスクリプションの状態変化などの様々なイベントを、外部のシステムに送信できます。
 
-https://nextjs.org/docs/app/building-your-application/routing/route-handlers#route-resolution
+開発中は、Stripe CLIの`--forward-to`オプションを利用して、ローカルのAPIにStripe Webhookのイベントを中継できます。
 
-To reduce risk of conflicts, it is recommended to group APIs under the `app/api` directory, same as in Next.js v12 and earlier.
-:::
-
-## Relaying Stripe Webhook Events to Next.js Using Stripe CLI
-
-
-Having prepared our API, the next crucial step that we will tackle in our workshop is the configuration process. This involves setting up the API to seamlessly receive and process events that occur on Stripe's platform.
-
-One of the game-changing tools we will be using is the Stripe's webhook. With the webinar, you'll learn just how easy it is to transmit various essential events - from the completion or failure of payments to changes in subscription status - to external systems.
-
-We also understand that these processes aren't limited to the live environments. Therefore, we'll delve into how to use Stripe CLI's `--forward-to` option to relay Stripe webhook events to your API in the local environment.
-
-We'll run through the execution of the following commands:
+次のコマンドを実行しましょう。
 
 ```bash
 stripe listen --forward-to http://localhost:3000/api/webhook
 ```
 
-Once you see `Ready` displayed on your command line, you can celebrate a successful configuration setup! This sets the foundation for you to continue building and exploring in your local environment.
+`Ready`と表示されれば、成功です。
 
 ```
 > Ready! You are using Stripe API Version [2022-11-15]. Your webhook signing secret is whsec_xxxxxx (^C to quit)
 ```
 
-### Utilizing Stripe CLI to Confirm Successful Relay to Next.js
+### Stripe CLIを利用して、Next.jsへの中継が成功しているか確認しよう
 
-Let's validate if the events are being successfully recieved by the API created in Next.js.
+Next.jsで作成したAPIにイベントが届いているかを確認しましょう。
 
-We will send a Webhook event from Stripe CLI.
-
+Stripe CLIからWebhookイベントを送信します。
 
 ```bash
 stripe trigger checkout.session.completed
 ```
 
-The CLI execution screen will display logs from Stripe's API calls as follows:
+次のようにStripeのAPI呼び出しのログがCLI実行画面に表示されます。
 
 ```bash
 Setting up fixture for: product
@@ -142,14 +140,14 @@ Running fixture for: payment_page_confirm
 Trigger succeeded! Check dashboard for event details.
 ```
 
-Additionally, the terminal screen where `stripe listen` is being executed will display the results of the Webhook transmission.
+また、`stripe listen`を実行しているターミナル画面では、Webhookの送信結果が表示されます。
 
 ```bash
 2023-08-07 12:04:06   --> product.created [evt_1NcJjmLQkVoOEzC2Fbwk9riN]
 2023-08-07 12:04:06  <--  [200] POST http://localhost:3000/api/webhook [evt_1NcJjmLQkVoOEzC2Fbwk9riN]
 ```
 
-And, if the following event logs are displayed on the terminal screen running `next dev` or `npm run dev`, then it indicates a successful implementation.
+そして`next dev`や`npm run dev`を実行しているターミナル画面に、次のようなイベントログが表示されれば成功です。
 
 ```log
 {
@@ -167,78 +165,82 @@ And, if the following event logs are displayed on the terminal screen running `n
         "tip": {}
       },
 ...
-
 ```
 
-This completes the setup of your development system to coordinate with various events happening within your Stripe account.
+これでStripeアカウント内で発生した様々なイベントと、開発中のシステムとの連携の準備ができました。
 
+## APIリクエストが、「Stripeから送信されたものか」を検証する
 
-## Verifying Whether an API Request was Sent from Stripe
-When integrating a system with a Webhook sent by a SaaS like Stripe, it is essential to "deny API requests that do not originate from that specific service."
+StripeのようなSaaSから送信されるWebhookとシステムを連携する場合、「そのサービス以外からのAPIリクエストを拒否」しなければなりません。
 
-In a situation where anyone can call up the API, there's a potential risk of exploitation, such as the "transmission of fraudulent order events."
+誰でもAPIを呼び出せる状態では、「偽の注文イベントを送信する」などの不正利用を受ける恐れがあります。
 
-**Example of sending fraudulent order data**
+**偽の注文データを送信する例**
 ```bash
 curl -XPOST http://localhost:3000/api/webhook -d '{ "id": "evt_3NcJjpLQkVoOEzC20xKExGCI", "object": "event", "api_version": "2022-11-15", "created": 1691377449, "data": { "object": { "id": "pi_3NcJjpLQkVoOEzC20n0doDzG", "object": "payment_intent", "amount": 3000, "amount_capturable": 0, "amount_details": { "tip": {} } } } }' -H 'Content-Type: application/json'
 ```
 
-To counter this, Stripe uses two tools - the Webhook's signature secret and secret API key. You'll learn how to apply these in order to verify the authenticity of incoming requests.
+Stripeでは、Webhook用の署名シークレットとシークレットAPIキーの2つを利用して、リクエストを検証します。
 
-### Retrieving the Signature Secret
-Let's review the results from executing the stripe listen command earlier.
+### 署名シークレットを取得する
+
+先ほどの`stripe listen`コマンド実行結果を確認しましょう。
 
 ```
 > Ready! You are using Stripe API Version [2022-11-15]. Your webhook signing secret is whsec_xxxxxx (^C to quit)
 ```
 
-As specified, `whsec_xxx` is the signature secret when developing locally.
+`Your webhook signing secret is whsec_xxxxxx`と書かれているように、`whsec_xxx`がローカル開発時の署名シークレットです。
 
-Create a `.env.local` file and save the copied value into that.
+`.env.local`ファイルを作成し、この値をコピーして保存しましょう。
 
 ```env:.env.local
 STRIPE_WEBHOOK_SECRET=wsec_xxx
 ```
 
-### Adding Stripe's Secret API Key to the Environment Variables
-For the signature verification process, you will also need Stripe's Secret API Key.
+### StripeのシークレットAPIキーを、環境変数に追加する
 
-To check your API key, open the [Developers] menu on your dashboard.
+署名検証処理では、StripeのシークレットAPIキーも必要です。
 
-![](https://storage.googleapis.com/zenn-user-upload/09ee8e5b4365-20230807.png)
+APIキーを確認するには、ダッシュボードの[開発者]メニューを開きましょう。
 
-Next, click on [API Keys] from the middle section of the menu.
+![](https://storage.googleapis.com/zenn-user-upload/95097c74935d-20220419.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/63c23d454cd6-20230807.png)
-
+続いて、中段のメニューから[API Keys]をクリックしましょう。
+![](https://storage.googleapis.com/zenn-user-upload/25080b93fe5b-20230807.png)
 
 :::message
-Tips: Three Types of Stripe API Keys
+**Tips: Stripe 3つのAPIキー**
 
-There are three types of API keys.
+APIキーには3つのAPIキーが存在します。
 
-The first one is a ''Publishable Key''. This key is used on the frontend app for operations like tokenizing a card.
-The second key is a ''Secret Key.'' This key provides access to all public APIs provided by Stripe. If leaked, there is a risk that customer information or order data could be retrieved.
-The last key is a ''Restricted Key''. This key, like the Secret Key, is used to access Stripe's API, but access to resources and operations can be individually configured.
+1つ目は「公開可能キー」です。これはフロントエンドアプリで、カードのtoken化などに利用します。
+2つ目は「シークレットキー」です。こちらはStripeの公開しているAPI全てにアクセスができるAPIで、万が一漏洩した場合には顧客情報や注文データなどを取得されるリスクが存在します。
+最後のキーは、「制限付きのキー」です。シークレットキー同様にStripeのAPIにアクセスするために利用しますが、アクセスできるリソースや操作を個別に設定することができます。
 
-With a Publishable Key and a Secret Key, you can develop an app that uses Stripe.
-However, if you want to operate your Stripe account more securely, we recommend using a Restricted Key instead of a Secret Key.
+公開可能キーとシークレットキーの２つがあれば、Stripeを利用したアプリの開発が可能です。
+ただし、より安全にStripeアカウントを運用したい場合は、シークレットキーの代わりに制限付きのキーを利用することをお勧めします。
 :::
 
-The [Secret Key] in the [Standard Keys] section is the API key used on the server-side.
-![](https://storage.googleapis.com/zenn-user-upload/63c23d454cd6-20230807.png)
+
+[標準キー]セクションの[シークレットキー]が、サーバー側で利用するAPIキーです。
 
 
-Click the [Reveal test key] button.
+![](https://storage.googleapis.com/zenn-user-upload/b166ee3d52dd-20230807.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/1cdad85e7692-20230807.png)
+[テストキーを表示]ボタンをクリックしましょう。
 
-This will display your Secret API Key.
-![](https://storage.googleapis.com/zenn-user-upload/0f607666f9c1-20230807.png)
+![](https://storage.googleapis.com/zenn-user-upload/0b2508bce444-20230807.png)
 
-You can copy the Secret API key simply by clicking on the displayed API key.
+シークレットAPIキーが表示されました。
 
-Let's add the acquired API key to your `.env.local` file.
+
+![](https://storage.googleapis.com/zenn-user-upload/aa96f0a93687-20230807.png)
+
+表示されているAPIキーをクリックするだけで、シークレットAPIキーをコピーできます。
+
+`.env.local`ファイルに、取得したAPIキーを追加しましょう。
+
 
 ```diff:.env.local
 STRIPE_WEBHOOK_SECRET=wsec_xxx
@@ -247,17 +249,20 @@ STRIPE_WEBHOOK_SECRET=wsec_xxx
 
 ### Install Stripe SDK
 
-Finally, let's install the SDK to be used for verification processing.
+最後に、検証処理に利用するSDKをインストールしましょう。
 
 ```bash
 npm i stripe
 ```
 
+これで準備ができました。
 
-### Adding Signature Verification Process to Next.js API
-Now, let's enhance our Next.js API by adding a verification process to determine if the API is being called from a Stripe Webhook. This will be done utilizing the signature secret we retrieved in the previous step.
+### Next.jsのAPIに、署名検証処理を追加する
 
-Please rewrite `app/api/webhook/route.ts` as follows:
+取得した署名シークレットを利用して、Stripe WebhookからのAPI呼び出しかどうかを検証する処理を追加しましょう。
+
+`app/api/webhook/route.ts`を次のように書き換えてください。
+
 
 ```ts:app/api/webhook/route.ts
 import { NextResponse } from "next/server";
@@ -299,73 +304,68 @@ export async function POST(request: Request) {
   }
 }
 ```
-
 :::message
-**Code Explanation**
+**コード解説**
+まずヘッダーから`stripe-signature`を取得します。これはStripeがAPIを呼び出す際に付与したものです。
 
-First, get the `stripe-signature` from the header. This is what Stripe attaches when it calls the API.
+この値と、APIリクエストのBodyを利用して、「Stripeからのリクエストか否か」を検証します。
 
-This value and the Body of the API request are used to verify whether or not the request is from Stripe.
+なお、「Next.jsの、`request.json()`や`request.text()`で取得できるBody」は、アプリ内での取り扱いを簡単にするための処理がされています。
 
-It should be noted that the Body that can be obtained with `request.json()` or `request.text()` in Next.js has been processed to make it easier to handle within the app.
-
-The Body used by the Stripe SDK requires the Body before it was processed, so we have added a process to revert it using Buffer.
+「Stripe SDKが利用するBody」では、処理される前のBodyが必要ですので、`Buffer`などを利用して元に戻す処理を追加しています。
 :::
 
+変更を保存後、Stripe CLIからWebhookイベントを送信し、Next.jsのAPIにエラーが発生しなければ成功です。
 
-After saving the changes, if you transmit a webhook event from the Stripe CLI and no errors occur in the Next.js API, it is successful.
-
-**1: Command to send an event**
-
+**1: イベントを送信するコマンド**
 ```bash
  stripe trigger payment_intent.succeeded
 ```
 
-**2: Example of the log displayed in the terminal where the `stripe listen` command is running**
+**2: `stripe listen`コマンド実行中のターミナルに表示されるログの例**
 
 ```bash
 2023-08-07 14:11:59  <--  [200] POST http://localhost:3000/api/webhook [evt_3NcLjVLQkVoOEzC20HbqByIJ]
 ```
 
-**3: Example of the log displayed in the terminal where the `next dev` / `npm run dev` command is running**
+**3: `next dev` / `npm run dev`コマンド実行中のターミナルに表示されるログの例**
 
 ```bash
 { type: 'charge.succeeded', id: 'evt_3NcLjVLQkVoOEzC20HbqByIJ' }
 ```
 
-When you directly call the API:
-
+APIを直接呼び出してみましょう。
 
 ```bash
 curl -XPOST http://localhost:3000/api/webhook -d '{"name": "John"}'
 ```
 
-You'll get the following error:
+エラーになることがわかります。
 
 ```bash
 {
   "message": "Bad request"
 }
-
 ```
-  
-Now, you are ready to safely operate your API integrated with Stripe.
 
-## Implement the Process to Display Order Details
+これでStripeと連携するAPIを安全に運用できる準備ができました。
 
-Let's implement the process to retrieve "ordered products and customer information" to hand over to the team that will integrate with the in-house shipping system.
 
-### Supported Webhook Events
+## 注文内容を表示する処理を実装しよう
 
-If you are using Stripe's redirect type payment form (Checkout / Payment Links + Buy button & Pricing Table), there are three events that indicate that an order has been completed:
+社内の発送システムとの連携を行うチームに引き継ぎするため、「注文された商品や顧客情報」を取得する処理を実装しましょう。
 
-- `checkout.session.completed`:Event indicating that the order flow on Checkout is complete.
-- `checkout.session.async_payment_succeeded`: In cases where "ordering and payment are not simultaneous", such as bank transfers or convenience store payments, it indicates that customer's payment is complete.
-- `checkout.session.async_payment_failed`: It indicates a state of non-payment, such as when there is no deposit to a specific convenience store or bank account by the due date.
+### サポートするWebhookイベント
 
-It indicates a state of non-payment, such as when there is no deposit to a specific convenience store or bank account by the due date.
+Stripeのリダイレクト型決済フォーム（Checkout / Payment Links + Buy button & Pricing Table）を利用している場合、注文が完了したことを知らせるイベントは次の3つです。
 
-Update `app/api/webhook/route.ts` as following:
+- `checkout.session.completed`: Checkoutの注文フローが完了した状態を知らせるイベント
+- `checkout.session.async_payment_succeeded`: 銀行振込やコンビニ決済など「注文と決済が同時でないケース」にて、顧客の決済が完了した状態を知らせるイベント
+- `checkout.session.async_payment_failed`: 「期日までに、指定のコンビニエンスストアまたは銀行口座に入金がなかった」場合など、支払いが完了しなかった状態を知らせるイベント
+
+3つのイベント以外では、処理を行わないようにコードを変更しましょう。
+
+`app/api/webhook/route.ts`を次のように変更します。
 
 ```diff ts:app/api/webhook/route.ts
     const event = stripe.webhooks.constructEvent(
@@ -381,27 +381,28 @@ Update `app/api/webhook/route.ts` as following:
 +      'checkout.session.completed',
 +      'checkout.session.async_payment_succeeded',
 +    ].includes(event.type)) {
-+      // Payment Succeeded
++      // 決済が成功したケース
 +    } else if (event.type === 'checkout.session.async_payment_failed') {
-+      // Payment Failuer
++      // 決済が失敗したケース
 +    }
     return NextResponse.json({
       message: `Hello Stripe webhook!`
     });
 ```
-### Implement to only process 'orders that have completed payment'
 
-Increasing the available payment methods also leads to an expansion of the customer base using the e-commerce site.
+### 「支払いが完了した注文」のみを処理するように実装しよう
 
-To support payments other than credit cards, let's prepare a mechanism to 'start the shipping process only for orders that have been completed up to the payment'.
+利用できる決済手段を増やすことは、e-commerceサイトを利用する顧客層の拡大にもつながります。
 
-In payments that require 'additional actions by the customer' such as bank transfers, the payment is not complete when the `checkout.session.completed` event occurs.
+クレジットカード以外の決済もサポートできるようにするため、「決済まで完了した注文のみ、発送処理を開始する」仕組みを用意しましょう。
 
-However, in events that are completed up to the payment on the spot, such as credit card payments, the `checkout.session.async_payment_succeeded` event does not occur.
+銀行振込などの「顧客による追加のアクションが必要な決済」では、`checkout.session.completed`イベントが発生した時点で、決済が完了していません。
 
-Therefore, it is necessary to support both events.
+ただし、クレジットカード決済など、その場で決済まで完了しているイベントでは、`checkout.session.async_payment_succeeded`イベントは発生しません。
 
-Update `app/api/webhook/route.ts` as following:
+そのため、両方のイベントをサポートする処理が必要です。
+
+`app/api/webhook/route.ts`を次のように変更しましょう。
 
 ```diff ts:app/api/webhook/route.ts
     const event = stripe.webhooks.constructEvent(
@@ -413,35 +414,38 @@ Update `app/api/webhook/route.ts` as following:
       'checkout.session.completed',
       'checkout.session.async_payment_succeeded',
     ].includes(event.type)) {
+      // 決済が成功したケース
 +      const data = event.data.object as Stripe.Checkout.Session
 +      if (data.payment_status === 'paid') {
 
 +      }
     } else if (event.type === 'checkout.session.async_payment_failed') {
-
+      // 決済が失敗したケース
     }
     return NextResponse.json({
       message: `Hello Stripe webhook!`
     });
 ```
 
-Now you can support the feature of "not processing orders whose payment status is not `paid`".
+これで、「支払いステータスが`paid`ではない注文は処理しない」動きをサポートできました。
 
-By supporting both `checkout.session.completed` and `checkout.session.async_payment_succeeded`, it is easier to support multiple payment methods.
+`checkout.session.completed`と`checkout.session.async_payment_succeeded`両方をサポートすることで、複数の決済手段にもサポートしやすくなっています。
 
-### Obtaining Customer Information from Webhook Event Data
-Now that the conditions for integrating with the shipping system have been set, let's retrieve the information to send.
+### Webhookイベントデータから、顧客情報を取得する
 
-Customer information can be obtained from the event data.
+発送システムに連携する条件設定が完了しましたので、送信する情報を取得します。
 
-Update `app/api/webhook/route.ts` as following:
+顧客情報については、イベントデータから取得できます。
 
+
+`app/api/webhook/route.ts`を次のように変更しましょう。
 
 ```diff ts:app/api/webhook/route.ts
     if ([
       'checkout.session.completed',
       'checkout.session.async_payment_succeeded',
     ].includes(event.type)) {
+      // 決済が成功したケース
       const data = event.data.object as Stripe.Checkout.Session
       if (data.payment_status === 'paid') {
 +        const customerDetails = data.customer_details
@@ -455,17 +459,17 @@ Update `app/api/webhook/route.ts` as following:
 +        })
       }
     } else if (event.type === 'checkout.session.async_payment_failed') {
-        
+      // 決済が失敗したケース
     }
 ```
 
-Let's try sending a product order event using Stripe CLI.
+商品注文イベントを、Stripe CLIで送信してみましょう。
 
 ```bash
- stripe trigger checkout.session.completed
+stripe trigger checkout.session.completed
 ```
 
-The order amount and address will be displayed in the log of the Next.js app.
+Next.jsアプリのログに、注文金額や住所が表示されます。
 
 ```bash
 {
@@ -485,13 +489,13 @@ The order amount and address will be displayed in the log of the Next.js app.
 }
 ```
 
-### Retrieving the Cart Contents via the Stripe API
+### Stripe APIでカートの中身を取得する
 
-Finally, let's also retrieve the contents of the cart.
+最後にカートの中身についても取得しましょう。
 
-To do this, we will call the Stripe API using the "Checkout Session ID" from the webhook event
+こちらは、Webhookイベントの「Checkout Session ID」を利用して、Stripe APIを呼び出します。
 
-Update `app/api/webhook/route.ts` as following:
+`app/api/webhook/route.ts`を次のように変更しましょう。
 
 ```diff ts:app/api/webhook/route.ts
     if ([
@@ -530,14 +534,13 @@ Update `app/api/webhook/route.ts` as following:
     }
 ```
 
-
-Try sending a product order event using Stripe CLI.
+商品注文イベントを、Stripe CLIで送信してみましょう。
 
 ```bash
- stripe trigger checkout.session.completed
+stripe trigger checkout.session.completed
 ```
 
-The product information of the cart is displayed in the log of the Next.js app.
+Next.jsアプリのログに、カートの商品情報が表示されました。
 
 ```bash
 {
@@ -549,9 +552,10 @@ The product information of the cart is displayed in the log of the Next.js app.
 }
 ```
 
-All that's left is for the team taking over to continue developing using this data.
+あとはこれらのデータを利用して、引き継ぎしたチームが開発を続けるだけです。
 
-## Quick recap
-- In the App Router of Next.js(v13), you can add an API with `app/[path name]/route.ts`
-- Which methods to support can be defined by `export function [method name]`
-- With Stripe CLI, you can forward Stripe's Webhook events to the local environment
+## おさらい
+
+- Next.js(v13)のApp Routerでは、`app/[パス名]/route.ts`でAPIを追加できる
+- どのメソッドをサポートするかは、`export function [メソッド名]`で定義できる
+- Stripe CLIを使えば、StripeのWebhookイベントをローカル環境に転送できる

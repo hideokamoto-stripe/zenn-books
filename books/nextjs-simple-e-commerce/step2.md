@@ -1,32 +1,31 @@
 ---
-title: "Step 1: Implementing a Simple Product Sales Page with Low Code"
+title: "Step 1: ローコードでシンプルな製品販売ページを実装する"
 ---
 
- In this step, we'll walk you through implementing a simple product sales page with minimal code, allowing you to focus on the core features of your e-commerce site.
+このステップでは、できるだけ少ないコードで、シンプルな製品販売ページを追加する方法を紹介します。
 
-## Set up a web app with Next.js (version 13)
+## Next.js(version 13)でウェブアプリをセットアップしよう
 
-First, let's prepare the web app.
+まずはウェブアプリを用意しましょう。
 
-In this document, we will use Next.js (version 13).
+この資料では、Next.js(version 13)を利用します。
 
-Run the `create-next-app` command to set up the app.
+`create-next-app`コマンドを実行して、アプリをセットアップしましょう。
+
 
 https://www.npmjs.com/package/create-next-app
-
 
 ```bash
 npx create-next-app@13
 ```
-
 :::message
-The Next.js documentation recommends $ npx create-next-app@latest.
-However, this workshop document is created assuming the Next.js version 13 series (using version 13.4.12 at the time of document creation).
+Next.jsドキュメントでは、`$ npx create-next-app@latest`を推奨しています。
+ですが、このワークショップ資料では、Next.js version 13系列（資料作成時はversion `13.4.12`を利用）を前提として作成しています。
 
-Therefore, for convenience, the document is set to always use Version 13.
+そのため、資料では便宜上、必ずVersion 13を利用するように設定しています。
 :::
 
-After the downloads are complete, you'll be asked if you want to download the create-next-app command. Enter y.
+「`create-next-app`コマンドをダウンロードしてよいか？」を確認されますので、[y]を入力しましょう。
 
 ```bash
 Need to install the following packages:
@@ -34,60 +33,58 @@ Need to install the following packages:
 Ok to proceed? (y) 
 ```
 
-After the download is complete, the project setup will start in an interactive format.
+ダウンロードが完了すると、対話形式でプロジェクトのセットアップが始まります。
 
-First, you will be asked for the project name. Enter nextjs-stripe-e-commerce.
-
+まずはプロジェクト名を聞かれますので、`nextjs-stripe-e-commerce`と入力しましょう。
 
 ```bash
 ? What is your project named? › nextjs-stripe-e-commerce
 ```
 
-You will be asked if you want to use TypeScript, and reply with 'y'.
-
+「TypeScriptを利用するか」を聞かれますので、これも`y`と回答します。
 
 ```bash
 ? Would you like to use TypeScript? › No / Yes
 ```
 
-You'll be asked if you want to use ESLint, and reply with 'y'.
+「ESLintを利用するか」を聞かれますので、これも`y`と回答します。
+
 
 ```bash
 ? Would you like to use ESLint? › No / Yes
 ```
 
-If you answer 'y' to the next question, Tailwind CSS will be set up.
+次の質問に`y`と回答すると、Tailwind CSSがセットアップされます。
+
 
 ```bash
 ? Would you like to use Tailwind CSS? › No / Yes
 ```
 
-You will be asked about the directory structure. Since we don't use the src directory, choose 'no'.
+ディレクトリ構造について質問があります。`src`ディレクトリは利用しないので、`no`と回答しましょう。
 
 
 ```bash
 ? Would you like to use `src/` directory? › No / Yes
 ```
 
-App Router is a feature added from Next.js version 13.
+[App Router]はNext.js version 13から追加された機能です。
 
-https://nextjs.org/docs/app
-
-Since we will use it in this workshop, choose 'yes'.
+このワークショップで利用しますので、`yes`を選びます。
 
 
 ```bash
 ? Would you like to use App Router? (recommended) › No / Yes
 ```
 
-Lastly, you will be asked about Import aliases. Choose the default 'no' here as well.
+最後に[Importエイリアス]について聞かれます。こちらもデフォルトの`no`を選びましょう。
+
 
 ```bash
 ? Would you like to customize the default import alias? › No / Yes
 ```
 
-Once the settings are complete, the app setup will begin.
-
+ここまでの設定が終われば、アプリのセットアップが始まります。
 
 ```bash
 
@@ -113,7 +110,7 @@ Installing dependencies:
 - eslint-config-next
 ```
 
-If you see a message like the following, the setup is complete.
+次のようなメッセージが表示されれば、セットアップ完了です。
 
 
 ```bash
@@ -127,21 +124,22 @@ Initialized a git repository.
 Success! Created nextjs-stripe-e-commerce at /Users/stripe/sandbox/nextjs-stripe-e-commerce
 ```
 
-## Starting a Next.js App in a Local Environment
+## Next.jsアプリをローカル環境で起動する
 
-Let's try running the setup code locally.
+セットアップしたコードを、ローカルで動かしてみましょう。
 
 ```bash
 npm run dev
 ```
-By executing this command, the app will be launched within your working PC.
+
+このコマンドを実行すると、作業中のPC内でアプリが立ち上がります。
 
 ```bash
 $ next dev
 - ready started server on 0.0.0.0:3000, url: http://localhost:3000
 ```
 
-If the `3000` port is being used by another app, find an available port to use.
+もし`3000`ポートが他のアプリで使われている場合は、空いているポートを探して利用します。
 
 ```bash
 $ next dev
@@ -149,19 +147,19 @@ $ next dev
 - ready started server on 0.0.0.0:3001, url: http://localhost:3001
 ```
 
-Accessing this URL from your browser will display the default page of the set up Next.js app.
+このURLにブラウザからアクセスすると、セットアップしたNext.jsアプリのデフォルトページが表示されます。
 
 ![](https://storage.googleapis.com/zenn-user-upload/24d5928f6859-20230728.png)
 
-## Setting up Layout in Next.js v13
+## Next.js v13でレイアウトを設定する
 
-In Next.js, you can use `app/layout.tsx` to set up the layout for the entire site.
+Next.jsでは、`app/layout.tsx`を利用してサイト全体のレイアウトを設定できます。
 
 https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts
 
-Let's quickly add a header.
+早速、ヘッダーを追加してみましょう。
 
-Please modify `app/layout.tsx` as follows:
+`app/layout.tsx`を次のように変更してください。
 
 ```diff:typescript app/layout.tsx
 
@@ -197,162 +195,162 @@ export default function RootLayout({
 }
 ```
 
-After saving the changes, the page will automatically reload.
+変更を保存すると、自動的にページが再読み込みされます。
 
-If the header menu has been added, the edit was successful.
+そしてヘッダーメニューが追加されていれば、編集成功です。
 
 ![](https://storage.googleapis.com/zenn-user-upload/ddf58cb9e85d-20230728.png)
 
-## Register Your Products for Sale on Stripe
+## 販売する商品をStripeに登録しよう
 
-Now that your web app is ready, let's register the products you are going to list on Stripe.
+ウェブアプリの準備ができましたので、掲載する商品をStripeに登録しましょう。
 
-Open the Stripe dashboard in your browser.
+ブラウザで、Stripeダッシュボードを開きます。
 
-Click "products" from the dashboard menu.
+ダッシュボードのメニューから[商品]をクリックします。
 
 ![](https://storage.googleapis.com/zenn-user-upload/6deb907038be-20230804.png)
+直接リンク: https://dashboard.stripe.com/test/products
 
-Direct link: https://dashboard.stripe.com/test/products
-
-There's an "Add Product" button, let's click that.
+[商品を追加]ボタンがありますので、クリックしましょう。
 
 ![](https://storage.googleapis.com/zenn-user-upload/d4eb3a31930f-20230804.png)
 
-The product registration screen will appear.
 
-### Register Product Information
-For the demo product, let's input and upload the following text and image.
+商品の登録画面が開きます。
 
-|Product Name|Image（ unsplash.com ）|
+### 商品の基本情報を登録しよう
+
+デモ用の商品として、以下のテキストと画像を入力・アップロードしましょう。
+
+|商品名|画像（フリー素材DLページ）|
 |:--|:--|
-|Sofa|https://images.unsplash.com/photo-1616627451515-cbc80e5ece35?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fm=png&fit=crop&w=600&q=80|
+|ソファ|https://images.unsplash.com/photo-1616627451515-cbc80e5ece35?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fm=png&fit=crop&w=600&q=80|
 
 ![](https://storage.googleapis.com/zenn-user-upload/1f65c05d8c8d-20230804.png)
 
-### Register Pricing Information and Save
-Next, let's register the product price.
+### 価格情報（料金）を登録して保存しよう
 
-Scroll down the page to display the 'Pricing Information' form and input the following data.
+続いて商品の価格を登録しましょう。
 
-|Pricing Model|Price|Currency|Type|
+ページをスクロールして[料金情報]フォームを表示し、以下のデータを入力します。
+
+|料金体系モデル|価格|通貨|種類|
 |:--|:--|:--|:--|
-|Standard pricing|15000|JPY|One-Time|
+|標準の料金体系|150000|JPY|[一括]|
 
 ![](https://storage.googleapis.com/zenn-user-upload/49502b8f841d-20230804.png)
 
-Once you've finished entering, click 'Save Product' at the top right of the page.
+入力が終われば、ページ右上の[商品を保存]をクリックしましょう。
+
 ![](https://storage.googleapis.com/zenn-user-upload/bd43e47770c1-20230804.png)
 
-Once you've navigated to the product page, the registration is complete.
+
+商品ページに移動すれば、登録完了です。
 
 ![](https://storage.googleapis.com/zenn-user-upload/31df2dfcd66a-20230804.png)
 
+
 :::message
-**Add Multiple Products**
-I've prepared some samples as test data below. 
-You don't need to register all of them.
-But the more you have, the more it will look like an online store, so please try registering if you have time.
+### 複数の商品を追加しよう
 
-|Product Name|Price|Image|Pricing Model|Currency|Type|
+テスト用のデータとして、いくつかのサンプルを以下に用意しました。
+全て登録する必要はありませんが、多い方が通販サイトらしくなるかと思いますので、時間に余裕のある方はぜひ登録してみましょう。
+
+|商品名|価格|画像（フリー素材DLページ）|料金体系モデル|通貨|種類|
 |:--|:--|:--|:--|:--|:--|
-|Chair|97000|[Link](https://images.unsplash.com/photo-1622147681210-d7da05b4a7d7?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&fm=png&fit=crop&w=600&q=80)| Standard pricing|JPY|One-Time|
-|Wooden Stool|6000|[Link](https://images.unsplash.com/photo-1503602642458-232111445657?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fm=png&fit=crop&w=600&q=80)| Standard pricing|JPY|One-Time|
-|Retro Chair|12000|[Link](https://images.unsplash.com/photo-1519947486511-46149fa0a254?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fm=png&fit=crop&w=600&q=80)| Standard pricing|JPY|One-Time|
-
+|Chair|97000|[Link](https://images.unsplash.com/photo-1622147681210-d7da05b4a7d7?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&fm=png&fit=crop&w=600&q=80)|標準の料金体系|JPY|[一括]|
+|Wooden Stool|6000|[Link](https://images.unsplash.com/photo-1503602642458-232111445657?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fm=png&fit=crop&w=600&q=80)|標準の料金体系|JPY|[一括]|
+|Retro Chair|12000|[Link](https://images.unsplash.com/photo-1519947486511-46149fa0a254?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&fm=png&fit=crop&w=600&q=80)|標準の料金体系|JPY|[一括]|
 :::
 
-## Create Product Order Links and Buttons  
-  
-Stripe allows you to create an order page without any coding.   
-  
-Let's generate the URL of the order page from the dashboard.   
-  
-With the dashboard displayed, press `[c]` and then `[l]` on your keyboard.   
+## 商品注文リンクとボタンを作成しよう
 
-![](https://storage.googleapis.com/zenn-user-upload/2d629e71eed2-20230804.png)
+Stripeでは、注文ページをノーコードで作成することができます。
 
-This will open up the payment link creation screen.  
-  
-![](https://storage.googleapis.com/zenn-user-upload/98d5a663d252-20230804.png)
-  
-In this way, the Stripe dashboard provides multiple [keyboard shortcuts] to make operations smoother.   
-  
-![](https://storage.googleapis.com/zenn-user-upload/821551879e02-20230804.png)
-  
-:::message  
-#### Other ways to open the payment link creation page  
-Apart from keyboard shortcuts, there are other ways to navigate.  
-  
-##### Moving from the header menu  
-Click the [Create] button at the top of the page and select [Payment link].  
-![](https://storage.googleapis.com/zenn-user-upload/79811879e07d-20230804.png)
-  
-##### Directly moving via URL   
-You can also bookmark and directly navigate to https://paymentlinks.new.  
-:::  
+注文ページのURLをダッシュボードから発行してみましょう。
 
 
+ダッシュボードを表示した状態で、 [c]キー -> [l]キーの順にキーボードを入力します。
 
-On the Payment Links creation page, you can register products that can be ordered.
+![](https://storage.googleapis.com/zenn-user-upload/9058b6a5d7ce-20220419.png)
+
+すると支払いリンクを作成する画面が開きます。
+
+![](https://storage.googleapis.com/zenn-user-upload/6077c0b5f263-20230525.png)
+
+このように、Stripeダッシュボードでは、操作を簡単にするための[キーボードショートカット]が複数用意されています。
+
+![](https://storage.googleapis.com/zenn-user-upload/85f46fa1c303-20230526.png)
+
+:::message
+#### その他の支払いリンク作成画面の開き方
+キーボードショートカット以外にも、いくつかのアクセス方法が用意されています。
+
+##### ヘッダーメニューから移動する
+ページ上部の[作成]ボタンをクリックし、[支払いリンク]を選択しましょう。
+![](https://storage.googleapis.com/zenn-user-upload/69bed5e60a70-20230525.png)
+
+##### URLで直接移動する
+https://paymentlinks.new をブックマークすることで、URLから直接移動することも可能です。
+:::
+
+Payment Links作成ページでは、注文できる商品を登録します。
+
+![](https://storage.googleapis.com/zenn-user-upload/6077c0b5f263-20230525.png)
 
 
-![](https://storage.googleapis.com/zenn-user-upload/98d5a663d252-20230804.png)
-  
+画面左側の設定画面にある、[商品]セクションの検索フォームをクリックしましょう。
 
-Click on the search form in the "Products" section on the left side of the setting screen.
+[新しい商品を追加] ボタンと、すでに登録されている商品のリストが表示されます。
 
-A "Add New Product" button and a list of already registered products will be displayed.
+![](https://storage.googleapis.com/zenn-user-upload/e1637ddc7ebb-20230525.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/2bde0a6d1448-20230804.png)
+[Sofa]商品を選びましょう。
 
-Select the "Sofa" product.
 
-Now the product has been added to the payment link you are editing.
+これで編集中の支払いリンクに 商品が追加されました。
+![](https://storage.googleapis.com/zenn-user-upload/d14f28553922-20230525.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/7db258c51ac8-20230804.png)
+あとは画面右上にある[リンクを作成]を クリックすると・・・
+![](https://storage.googleapis.com/zenn-user-upload/f9a16f0361fa-20230525.png)
 
-Then, by clicking on "Create Link" at the top right of the screen.
+これだけで注文用のURLが発行できました。
 
-![](https://storage.googleapis.com/zenn-user-upload/40045f41fae6-20230804.png)
+![](https://storage.googleapis.com/zenn-user-upload/e45aca6b0e93-20230525.png)
 
-With just this, you have been able to issue a URL for ordering.
+表示されているURLをコピーしたり、QRコードをダウンロードして共有することで、顧客からの注文・決済を受け付けることができます。
 
-![](https://storage.googleapis.com/zenn-user-upload/e7146fe97166-20230804.png)
+### 購入ボタンのコードスニペットを埋め込む
 
-By copying the displayed URL or downloading and sharing the QR code, you can accept orders and payments from customers.
-
-### Embedding the Buy Button Code Snippet
-
-From 2023, it has become possible to embed payment links in your site as a button or in card format.
+2023年から、支払いリンクをボタンまたはカード形式でサイトに埋め込むことができるようになりました。
 
 https://stripe.com/docs/payment-links/buy-button
 
-Click on the "Buy Button" button in the Payment Link management screen.
 
-![](https://storage.googleapis.com/zenn-user-upload/0454317ebdd9-20230804.png)
+支払いリンク管理画面にある、[購入ボタン]ボタンをクリックしましょう。
 
-When you click, it will open the edit screen of the Buy Button, which can be embedded on websites and apps.
+![](https://storage.googleapis.com/zenn-user-upload/7f4ba71e8e68-20230525.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/82a63ddade49-20230804.png)
+クリックすると、サイトやアプリに埋め込む購入ボタンの編集画面が開きます。
 
-Click on "Copy Code".
+![](https://storage.googleapis.com/zenn-user-upload/a7a7926ab354-20230526.png)
 
-With just pasting the copied code, you can add order and subscription application functions to websites and apps.
+[コードをコピー]をクリックしましょう。
 
+コピーしたコードを貼り付けるだけで、ウェブサイトやアプリに注文・サブスクリプション申し込み機能を追加できます。
 
-## Creating a Product Page in Next.js v13
+## Next.js v13で商品ページを作成する
 
-Let's use the copied code snippet to add a product page to our web app.
+コピーしたコードスニペットを利用して、ウェブアプリに商品ページを追加しましょう。
 
-### Adding a Product Page in the App Router
+### App Routerで商品ページを追加する
 
-First, let's create a file for the product page.
+まずは商品ページ用のファイルを作成しましょう。
 
-Create `app/products/page.tsx`.
+`app/products/page.tsx`を作成します。
 
-Let's create the layout for the product page.
-
+商品ページのレイアウトを作りましょう。
 
 ```ts:app/products/page.tsx
 import { Metadata } from 'next'
@@ -376,9 +374,9 @@ export default function Page() {
 
 ![](https://storage.googleapis.com/zenn-user-upload/54aa6315092e-20230804.png)
 
-And paste the copied code.
+コピーしたコードを、貼り付けます。
 
-```diff:tsx app/products/page.tsx
+```diff ts:app/products/page.tsx
 export default function Page() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
@@ -397,17 +395,19 @@ export default function Page() {
     </main>
   )
 }
+
 ```
 
-### Resolving TypeScript Errors
-When developing in TypeScript, you may encounter the following type-related error.
+### TypeScriptのエラーを解消する
+
+TypeScriptで開発している場合、次の型に関するエラーが発生します。
 
 ```
 ./app/products/page.tsx:17:9
 Type error: Property 'stripe-buy-button' does not exist on type 'JSX.IntrinsicElements'.
 ```
 
-To resolve this error, let's add a`types/stripe.d.ts` file.
+このエラーを解消するには、`types/stripe.d.ts`ファイルを追加しましょう。
 
 ```ts:types/stripe.d.ts
 declare namespace JSX {
@@ -421,24 +421,23 @@ declare namespace JSX {
   }
 ```
 
-This will eliminate the error.
-
-And now, we were able to display the products registered with Stripe.
+これでエラーがなくなり、Stripeに登録した商品を表示できました。
 
 ![](https://storage.googleapis.com/zenn-user-upload/eadac29a7f35-20230804.png)
 
 :::message
-***[Advanced] Advanced Register Multiple Products***
+***[Advanced] 複数の商品を登録しよう***
 
-For those who registered multiple products in the previous step, let's try repeating this step to create a product list.
+前のステップで、複数の商品を登録された方は、このステップを繰り返して商品一覧を作ってみましょう。
 
-When adding multiple Buy Buttons, you don't have to add more `script` tag per page.
+Buy Buttonを複数追加する場合は、`script`タグは1ページに1つだけでOKです。
+
 
 ```diff:tsx app/products/page.tsx
 export default function Page() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-        <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left md:gap-10">
+        <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
             <h1 className='text-4xl font-extrabold'>Products</h1>
             <script async
                 src="https://js.stripe.com/v3/buy-button.js">
@@ -465,25 +464,25 @@ export default function Page() {
 :::
 
 
-## Try Ordering with Stripe's Test Card Information
+## Stripeのテストカード情報で、実際に注文してみよう
 
-Now that the product page has been created, let's try placing an actual order.
+商品ページが作成できたので、実際に注文をしてみましょう。
 
-Stripe has prepared multiple payment information exclusively for the test environment for checking operation during development.
+Stripeでは、開発中の動作確認のため、テスト環境限定の決済情報を複数用意しています。
 
 https://stripe.com/docs/testing
 
-### Let's Try Ordering with a Credit Card Payment
+### クレジットカード決済で注文してみよう
 
-Click the [Buy] button on the product page.
+商品ページで[注文]ボタンをクリックしましょう。
 
 ![](https://storage.googleapis.com/zenn-user-upload/eadac29a7f35-20230804.png)
 
-Stripe's redirect payment form will be displayed.
+Stripeのリダイレクト型決済フォームが表示されます。
 
 ![](https://storage.googleapis.com/zenn-user-upload/f58d3f162732-20230804.png)
 
-Here, enter the following card information.
+ここで、以下のカード情報を入力しましょう。
 
 |Field|Value|
 |:--|:--|
@@ -495,28 +494,28 @@ Here, enter the following card information.
 
 ![](https://storage.googleapis.com/zenn-user-upload/c4cc8b50de79-20230804.png)
 
-When you click the Order button, a test payment will be made with your credit card.
+注文ボタンをクリックすると、クレジットカードでテスト支払いが行われます。
 
 ![](https://storage.googleapis.com/zenn-user-upload/879e2e600bb7-20230804.png)
 
-If you look at the "Payments" tab on the Stripe dashboard, you'll see the order from [Demo customer].
+Stripeダッシュボードの[支払い]タブをみると、`Demo customer`からの注文が表示されます。
 
 ![](https://storage.googleapis.com/zenn-user-upload/f84077cacd4a-20230804.png)
 
 :::message
-**[Advanced] Simulating Payment Failure and Fraud**
+**[Advanced] 決済失敗や不正利用をシミュレーションしよう**
 
-With Stripe, you can also test situations such as "When credit card balance is insufficient" or "When the product does not arrive and a complaint is received by the credit card company".
+Stripeでは、「クレジットカードの利用残高が不足している場合」や「商品が届かないと、クレジットカード会社にクレームが届いた場合」などのテストもできます。
 
 ![](https://storage.googleapis.com/zenn-user-upload/ed8b802b5d00-20230804.png)
 
-We have picked up three test cases from the documentation site, so please give them a try.
+ドキュメントサイトから、３パターンのテストケースをピックアップしましたので、ぜひお試しください。
 
 |Field|Value|
 |:--|:--|
-|Card Number (Insufficient Card Balance)| `4000000000009995`|
-|Card Number (3D Secure Authentication)| `4000002760003184`|
-|Card Number (Fraudulent Charge Claim)| `4000000000002685`|
+|Card number (カードの残高不足)| `4000000000009995`|
+|Card number (3Dセキュア認証)| `4000002760003184`|
+|Card number (不審請求の申請)| `4000000000002685`|
 |Card expiration| `12`/`30` |
 |CVC| `424`|
 |Name| `Demo customer`|
@@ -524,9 +523,9 @@ We have picked up three test cases from the documentation site, so please give t
 
 :::
 
-## Quick recap
+## おさらい
 
-- The overall layout of the site is set in `app/layout.tsx`
-- When adding a page, use `app/[path name]/page.tsx`
-- By registering a product with Stripe, you can create a payment form URL with no code required
-- Stripe Payment Links can generate code snippets for embedding
+- サイト全体のレイアウトは、`app/layout.tsx`で設定する
+- ページを追加する際は、`app/[パス名]/page.tsx`
+- Stripeに商品を登録することで、決済フォームURLをノーコードで作れる
+- Stripe Payment Linksは、埋め込み用のコードスニペットが生成できる

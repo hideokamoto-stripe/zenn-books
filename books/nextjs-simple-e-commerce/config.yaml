@@ -1,5 +1,5 @@
-title: "Build an e-commerce app with Next.js and Stripe"
-summary: "This hands-on workshop will guide you through the process of integrating Next.js, a popular React framework, with Stripe, a leading online payment platform. You'll explore key topics such as setting up a Next.js development environment, understanding the basics of Stripe's API, creating a seamless checkout experience, handling payments securely, and implementing advanced features like subscriptions and recurring payments.By the end of the workshop, you'll learn how to build a functional payment solution that you can integrate into your own projects or use as a starting point for future endeavors. "
+title: "Next.js(App Router)とStripeを利用した、ローコードでシンプルなECサイト構築チュートリアル"
+summary: このワークショップでは、StripeとNext.jsを利用したシンプルなe-commerceサイトを作る方法を学びます。 "
 topics: ['stripe', 'nextjs', 'react']
 published: true
 price: 0 # 有料の場合200〜5000

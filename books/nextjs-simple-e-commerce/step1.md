@@ -2,156 +2,159 @@
 title: "Introduction: Setting the Stage for the workshop"
 ---
 
-Let's get started with the workshop right away.
+早速ワークショップを始めましょう。
 
-First, let's prepare the necessary tools and accounts.
+まずは必要なツールやアカウントを用意します。
 
-## Creating a Stripe Account
-You'll need a Stripe account to store your data.
-If you don't have an account yet, please create one using the following URL:
+## Stripeアカウントの作成
+
+データを登録するためには、Stripeアカウントが必要です。
+まだアカウントを持っていない方は、以下のURLからアカウントを作成してください。
 
 https://dashboard.stripe.com/register
 
-![](https://storage.googleapis.com/zenn-user-upload/f047e1f8729e-20230731.png)
+![](https://storage.googleapis.com/zenn-user-upload/939f923c3dfc-20220419.png)
 
-Once you've created an account, log in to the dashboard.
+アカウントを作成後、ダッシュボードにログインしましょう。
 
 https://dashboard.stripe.com/
+### 新しいテスト用アカウントを作成しよう
 
-### Create a New Test Account
-First, let's create a store account for our test app.
+まずは、今回のテストアプリ用のストアアカウントを作成します。
 
-Stripe allows you to create and manage multiple accounts for different stores or services.
-Having separate accounts can help minimize the risk of unintended changes to customer data or billing amounts due to API testing or accidents during the workshop.
+Stripeでは、ストアやサービス毎に複数のアカウントを作成・管理することが可能です。
+アカウントを分けることで、APIの動作確認やワークショップ中の事故で顧客データや請求内容に予期せぬ変更が入るリスクなどを回避できます。
 
-Click the icon in the top left corner and then click New Account.
+ページ左上のアイコンをクリックし、[新規アカウント]をクリックしましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/2729990856bd-20230731.png)
+![](https://storage.googleapis.com/zenn-user-upload/3fcedd882d34-20220419.png)
 
-For your account, set the business or company name and the country where you operate.
+アカウントでは、ビジネス・企業名とどの国で業務を行なっているかの２点を設定します。
 
-Since this is a demo app, let's set it up as follows:
+今回はデモアプリですので、以下のように設定しましょう。
 
-- Account Name: demo.furni.com
-- Country of Operation: Japan
+- アカウント名: demo.furni.com
+- 業務をおこなっている国: Japan
 
+![](https://storage.googleapis.com/zenn-user-upload/7f654a649b6b-20220419.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/bde24e643ada-20230731.png)
+設定が完了すると、アカウントのTOPページに移動します。
 
-Once your settings are complete, you will be directed to your account's main page.
+![](https://storage.googleapis.com/zenn-user-upload/9058b6a5d7ce-20220419.png)
 
-![](https://storage.googleapis.com/zenn-user-upload/dff17b4068c9-20230731.png)
+#### Tips: 本番環境での利用について
 
-:::message
-**Tips: Using a Production Environment**
-When you create an account, a test environment is provided.
+アカウント作成すると、テスト環境が用意されます。
 
-Test environments have limitations such as "rejecting input other than Stripe-provided test card numbers" and "restricting the email addresses that can be sent invoices."
+テスト環境では、「Stripeが用意するテストカード番号以外の入力を拒否する」「請求書などのメールを送信できるアドレスが制限されている」などの制限があります。
 
-To actually accept customer payments, it's a good idea to apply for a production environment as soon as possible.
+実際に顧客の決済を受け付けるには、なるべく早い段階で本番環境の利用申請を行うようにしましょう。
 
-![](https://storage.googleapis.com/zenn-user-upload/49772e02c9a5-20230731.png)
+![](https://storage.googleapis.com/zenn-user-upload/b0d0b1a434d3-20220419.png)
 
-Please note that there is a risk that your account may be suspended if "the information provided about your business is deemed insufficient" or "your business is determined to fall under the [prohibited/restricted category]((https://stripe.com/ja-it/legal/restricted-businesses))." We recommend that you make sure your business is not subject to any prohibited or restricted categories and provide as much detailed business information as possible.
+なお、「サービス内容の詳細などの情報が不十分だと判断された場合」や「[禁止/制限付き業種](https://stripe.com/ja-it/legal/restricted-businesses)に該当すると判断された場合」、アカウントが停止される可能性があります。禁止・制限付き業種に該当しないかの事前に確認や、できるだけ詳細なビジネス情報の入力をお勧めします。
 
-:::
+## Stripe CLIのインストール
 
-## Installing Stripe CLI
-During the workshop, you'll need to forward Stripe webhook events to your local application.
+ワークショップ内で、StripeのWebhookイベントをローカル環境のアプリに転送する必要があります。
 
-For this purpose, let's install Stripe CLI.
+この転送にStripe CLIを利用しますので、インストールしましょう。
 
-### Installing with Homebrew
-Installing with Homebrew is easy.
+### Homebrewを使ったインストール
+Homebrewを使ってのインストールが簡単です。
 
-```bash
-brew install stripe/stripe-cli/stripe  
+```
+brew install stripe/stripe-cli/stripe
 ```
 
-### Installing on macOS / Windows
-For macOS and Windows and the other environments' installation methods, please check the Stripe documentation.
+### macOS / Windowsでのインストール
+macOSやWindowsでのインストール方法は、Stripeドキュメントを確認してください。
 
 https://stripe.com/docs/stripe-cli#install
 
 :::message
-**If you are unable to install**
-If you cannot install Stripe CLI, please use the Stripe Shell which is available in the browser.
+**インストールできない場合**
+もしStripe CLIのインストールがうまくいかない場合、ブラウザ上で利用できる[Stripe Shell]をご利用ください。
 
-While logged in to the dashboard, go to the [Stripe CLI documentation page](https://stripe.com/docs/stripe-cli).
+ダッシュボードにログインした状態で、[Stripe CLIのドキュメントページ](https://stripe.com/docs/stripe-cli)に移動しましょう。
 
-Click the Try Online button.
-
+[オンラインで試してみる]ボタンが表示されますので、クリックします。
 ![](https://storage.googleapis.com/zenn-user-upload/0344d992f943-20220420.png)
 
-The CLI operation screen will be displayed at the bottom of the browser.
 
+CLI操作画面がブラウザ下部に表示されます。
 ![](https://storage.googleapis.com/zenn-user-upload/b09650f24d2e-20220420.png)
 
 :::
 
-## Connecting to your Stripe account with Stripe CLI
-Now that you've installed Stripe CLI, it's time to connect it to your Stripe account.
 
-Stripe CLI accesses Stripe resources through the Stripe API. Therefore, you need to connect to your Stripe account and retrieve the API key.
+## Stripe CLIでStripeアカウントに接続する
 
-### Connect to your Stripe account with stripe login
-Use the stripe login command to connect to your Stripe account.
-When you run the command, you'll see a message like "Press Enter to open the browser." Press the Enter key.
+Stripe CLIのインストールが終われば、次はStripeアカウントへの接続です。
 
-```bash
-stripe login  
-Your pairing code is: amuse-revive-timely-sturdy  
-This pairing code verifies your authentication with Stripe.  
-Press Enter to open the browser (^C to quit)  
+Stripe CLIはStripe APIを介してStripeのリソースにアクセスします。そのため、Stripeアカウントに接続してAPIキーを取得する必要があります。
+
+
+### stripe loginでStripeアカウントと接続
+Stripeアカウントとの連携は、stripe loginコマンドで行います。
+コマンドを実行すると、「Enterキーを押してブラウザを開いてね」とメッセージが表示されますので、[Enterキー]を押しましょう。
+
+```
+stripe login
+Your pairing code is: amuse-revive-timely-sturdy
+This pairing code verifies your authentication with Stripe.
+Press Enter to open the browser (^C to quit)
 ```
 
 :::message
-**In case you are already logged in with a different account**
-In Stripe CLI, you can connect to multiple Stripe accounts using --project-name.
-If you want to change the default connected account to another Stripe account, modify the stripe command that appears from now on as follows.
+**すでに別アカウントでログイン済みの場合**
+Stripe CLIでは、`--project-name`を利用して複数のStripeアカウントに接続できます。
+デフォルトの接続先アカウントを別のStripeアカウントにしたい場合は、これ以降登場する`stripe`コマンドを次のように変更しましょう。
 
 ```bash
 stripe --project-name demo-furni
 ```
 
-**Example: Getting a list of customers**
+**例: 顧客一覧を取得する**
 
 ```bash
 stripe --project-name demo-furni customers list
 ```
+
 :::
 
-If you are already logged in to the Stripe Dashboard, you'll see an access permission confirmation screen like the one below.
+Stripe Dashboardにログインしている状態であれば、以下の画像のようにアクセス権の確認画面が表示されます。
 
 ![](https://storage.googleapis.com/zenn-user-upload/d5ecd73d2edf-20230731.png)
 
-Click Allow Access.
+[アクセスを許可]をクリックすると、完了画面が表示されます。
 
 ![](https://storage.googleapis.com/zenn-user-upload/8d56b179f6a7-20230731.png)
 
-When you go back to the Stripe CLI screen, you'll see a message in English indicating that the connection was successful.
+Stripe CLIの画面に戻ると、接続が成功したことが英文で表示されています。
 
 ```
-> Done! The Stripe CLI is configured for api-test with account id acct_xxxxxxxx  
-  
-Please note: this key will expire after 90 days, at which point you'll need to re-authenticate.  
+> Done! The Stripe CLI is configured for api-test with account id acct_xxxxxxxx
+
+Please note: this key will expire after 90 days, at which point you'll need to re-authenticate.
 ```
 
-Are you ready? Let's dive right into the workshop.
+準備はできましたか？それでは早速ワークショップを始めていきましょう。
 
-## Imagine the Story of the E-Commerce Site Development
+## 開発するe-commerceサイトの設定について
 
-Before we dive into the workshop, let's imagine the context for developing this system.
+せっかくのワークショップですので、「なぜこのシステムを開発するのか」の背景を想像してみましょう。
 
-You've been assigned to an e-commerce project for a furniture sales company.
+あなたはとある家具販売会社のe-commerce開発プロジェクトに参加しています。
 
-![](https://storage.googleapis.com/zenn-user-upload/f0caba6b4d68-20230727.png)
+この会社では、高品質な家具を、ユーザーから注文されてから製造し、配達しています。
 
-- This company produces high-quality **furniture** made-to-order and delivers it to customers upon request.
-- Since the website doesn't have a lot of traffic, there's **no need for inventory management** or order limitations at this stage.
-- Once you've **prepared the product sales system**, other team members will begin working on the site's design and content.
-- Therefore, the goal is to **create a product sales feature** with a **short schedule** and **minimal code**.
+ウェブサイトへのアクセスはあまり多くないため、現時点では在庫の管理や注文数の制限を行う必要はありません。
 
-Have you got the idea?
+商品の販売システムをあなたが準備すると、チームメンバーがサイトのデザインやコンテンツの追加を開始します。
 
-Now, let's explore how to integrate product sales functionality using Stripe into your **e-commerce site**.
+そのため、できるだけ短いスケジュール・少ないコードで商品販売機能を作ることが求められています。
+
+・・・イメージできましたでしょうか？
+
+それでは、Stripeを使って商品販売機能を組み込む方法を体験していきましょう。

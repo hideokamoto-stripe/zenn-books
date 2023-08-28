@@ -1,22 +1,24 @@
 ---
-title: "Step 3: Learning to Generate Product Pages Using Stripe API"
+title: "Step 3: Stripe APIを利用して、商品ページを動的に生成しよう"
 ---
 
-We successfully launched the e-commerce system.
+無事e-commerceシステムをローンチできました。
 
-Sales are going smoothly, and new products are gradually increasing.
+売れ行きも順調で、新しい商品も少しずつ増えています。
 
-## Task: Let's streamline the work of reflecting added or discontinued products
-One day, you are consulted by the operations team that "it's hard to add code snippets every time you add or delete products."
+## タスク: 追加した商品や販売終了した商品の反映作業を効率化しよう
 
-They also want to add a "cart function" in the future that allows you to order multiple products at once.
+ある日あなたは、運用チームから「商品を追加・削除するたびにコードスニペットを追加するのが大変」と相談されました。
 
-Let's update the integration with Stripe so that it can handle the addition of a cart function without changing the application's code.
+また、将来的に複数の商品をまとめて注文できる「カート機能」も追加したいとのことです。
 
-## 1: Create a type information file
-We will add custom type definitions that both the API and React will use.
+アプリケーションのコードを変更せず、カート機能の追加にも対応できるように、Stripeとの連携をアップデートしましょう。
 
-Create `app/types.ts` and add the following code.
+## 1: 型情報ファイルを作成しよう
+
+APIとReact両方で利用する、カスタムな型定義を追加します。
+
+`app/types.ts`を作成し、次のコードを追加しましょう。
 
 ```ts:app/types.ts
 import Stripe from "stripe"
@@ -26,10 +28,11 @@ export type ProductWithPrices = Stripe.Product & {
 }
 ```
 
-## 2: Retrieve Product Information from the Stripe API
-Let's first retrieve product information from Stripe.
+## 2: 商品情報をStripe APIから取得しよう
 
-Create `app/api/prices/route.ts` and add the following code.
+まずは商品情報をStripeから取得しましょう。
+
+`app/api/prices/route.ts`を作成し、次のコードを追加します。
 
 ```ts:app/api/prices/route.ts
 import { NextResponse } from "next/server";
@@ -73,15 +76,13 @@ export async function GET() {
 }
 ```
 
-Now try calling the API with cURL.
+APIをcURLで呼び出してみましょう。
 
 ```bash
-curl http://localhost:3000/api/prices  
+ curl http://localhost:3000/api/prices 
 ```
 
-If you see a response like the following, it is successful:
-
-
+次のようなレスポンスが表示されれば成功です。
 
 ```bash
 [  {
@@ -133,18 +134,19 @@ If you see a response like the following, it is successful:
 ]
 ```
 
-
 :::message
-**Code Explanation**
-With Stripe, when fetching both pricing and product information, you have two choices: "Fetch all at once with the Price API" or "Combine the Product API and Price API to fetch". In this case, we're using the less commonly used example of "Fetch all at once with the Price API".
+**コード解説**
+Stripeでは、料金と商品の両方をまとめて取得する場合、「Price APIで１度に取得する」か「Product APIとPrice APIを組み合わせて取得する」かの2つが選べます。
+今回はサンプルコードとして紹介されることの少ない、「Price APIで１度に取得する」を紹介しています。
 
-This method has the advantage of allowing you to "fetch all product information associated with the price", but the drawback of requiring array manipulation to generate responses based on products.
+この方法では、「料金に紐づいている商品情報をまとめて取得できる」代わりに、「商品を軸にしたレスポンス生成には、配列操作が必要」なデメリットがあります。
 :::
 
-### Call the Stripe API from Next.js
-Next, let's call the API we created from the UI (`page.tsx`).
+### Next.jsから、Stripe APIを呼び出す
 
-Change `app/products/page.tsx` as follows:
+続いて、UI（`page.tsx`）から作成したAPIを呼び出しましょう。
+
+`app/products/page.tsx`を次のように変更します。
 
 ```diff tsx:app/products/page.tsx
 import { Metadata } from 'next'
@@ -183,32 +185,33 @@ export const metadata: Metadata = {
 }
 ```
 
-Try reloading the page at http://localhost:3000/products.
+http://localhost:3000/products ページを再読み込みしてみましょう。
 
 ![](https://storage.googleapis.com/zenn-user-upload/98b8cc1d8d57-20230807.png)
 
-Data fetched from the API is now displayed.
+APIから取得したデータが表示されています。
 
 https://nextjs.org/docs/app/building-your-application/data-fetching/fetching-caching-and-revalidating
 
+
 :::message
-**Whether to 'staticize' or 'cache'**
+**「静的化」するか「キャッシュ」するか**
 
-From Next.js Version 13 onwards, you can call the Stripe API directly from `page.tsx`.
+Version13以降のNext.jsでは、Stripe APIを`page.tsx`から直接呼び出すこともできます。
 
-However, if you call it directly, the data will only be updated during the build time of the app (`next build`). This is called "static rendering".
+ただし、直接呼び出しした場合、そのデータは「アプリのビルド時`next build`のみ更新される」挙動となります。これを「静的レンダリング」とよびます。
 
 https://nextjs.org/docs/app/building-your-application/rendering/static-and-dynamic
 
-Therefore, in scenarios other than where "product updates are infrequent and manual rebuild is possible", we recommend the caching method introduced here.
+そのため、「商品の更新頻度が低く、手動で再ビルドも可能である」場面以外では、今回紹介しているキャッシュする手法をお勧めします。
 :::
 
-### Display product list from retrieved product information
+### 取得した商品情報から、商品一覧を表示しよう
 
-Let's replace the Buy Button with the product data we have retrieved.
+取得した商品データを、Buy Buttonの代わりに配置しましょう。
 
-Change `app/products/page.tsx` as follows:
 
+`app/products/page.tsx`を次のように変更します。
 
 ```diff tsx:app/products/page.tsx
   return (
@@ -259,21 +262,20 @@ Change `app/products/page.tsx` as follows:
   )
 ```
 
-After reload the page, the display will switch from the Buy Button to your custom product list page.
+ページを再読み込みすると、Buy Buttonから独自の商品一覧ページに表示が切り替わります。
 
 ![](https://storage.googleapis.com/zenn-user-upload/74808493c7f6-20230807.png)
 
 
-## 3: Use Stripe Checkout to Display an Order Button
-Finally, let's add the process of ordering the product we have displayed.
+## 3: Stripe Checkoutを利用して、注文ボタンを表示しよう
 
+最後に、表示した商品を注文する処理を追加しましょう。
 
-### Prepare an API to Redirect to the Payment Page
+### 決済ページにリダイレクトするAPIを用意しよう
 
-First, let's prepare an API to create a session of Stripe Checkout.
+まずは、Stripe Checkoutのセッションを作成するAPIを用意しましょう。
 
-Create `app/api/checkout/route.ts` and add the following code.
-
+`app/api/checkout/route.ts`を作成し、次のコードを追加します。
 
 ```ts:app/api/checkout/route.ts
 import { NextRequest, NextResponse } from "next/server";
@@ -327,22 +329,20 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-
 :::message
-**[Advanced Task] Try to support Orders for Multiple Products**
-In this workshop, we only introduce how to order each product.
-However, Stripe Checkout also supports orders for multiple types and quantities of products.
+**[応用課題] 複数商品の注文をサポートしよう**
+このワークショップでは、１商品ごとの注文方法飲み紹介します。
+ですが、Stripe Checkoutでは、複数種類・複数個の注文にも対応しています。
 
-Using the `else if (request.headers.get('content-type') === 'application/json') {}` part,
-let's think about how to process orders for multiple types and quantities of products.
+`else if (request.headers.get('content-type') === 'application/json') {}`部分を利用して、
+複数個・複数種類の注文を処理する方法を考えてみましょう。
 :::
 
+### 注文ボタンから、決済ページに移動する処理を追加しよう
 
-### Add a Process to Move to the Payment Page from the Order Button
+作成したAPIと注文ボタンを連携させましょう。
 
-Let's link the API we created with the order button.
-
-Change `app/products/page.tsx` to the following.
+`app/products/page.tsx`を次のように変更します。
 
 ```diff tsx:app/products/page.tsx
     {product.prices.map(price => {
@@ -367,12 +367,12 @@ Change `app/products/page.tsx` to the following.
     })}
 ```
 
-With this, we have a mechanism to move to the Stripe Checkout order page for each product.
+これで商品ごとにStripe Checkoutの注文ページに遷移する仕組みができました。
 
 ![](https://storage.googleapis.com/zenn-user-upload/0b22fb0a7d02-20230807.png)
 
-## Quick recap
+## おさらい
 
-- With Next.js, you can implement both server-side and client-side processing
-- The Stripe API allows you to retrieve product and price information
-- Stripe Checkout supports dynamic payment flows and cart functionalitiesる
+- Next.jsでは、サーバー側・クライアント側の処理両方が実装できる
+- Stripe APIを利用して、商品や価格情報が取得できる
+- Stripe Checkoutなら、動的な決済フローやカート機能に対応できる

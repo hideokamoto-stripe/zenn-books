@@ -1,40 +1,43 @@
 ---
-title: "Wrap Up: Taking Your E-commerce App to the Next Level"
+title: "おわりに"
 ---
 
-Congratulations on completing the workshop! You've now learned the essential skills for developing an efficient e-commerce solution. Keep exploring to further enhance your app and skills.
+これでワークショップは以上です。
+StripeやNext.jsの基本的な機能と、簡単なECサイトを構築する方法を体験することができました。
 
-## Hints for More Practical Use Cases
-Finally, let's introduce some use cases where you often need to research and consider when actually building an e-commerce site.
-I'll also introduce some Stripe document URLs, so please think about "how would you implement it?"
+この体験が、ご自身の開発スキルの向上や、新しい提案のヒントになればと思います。
 
-### 1: Deploying to Hosting Services
-In this workshop, we worked in a local environment. However, to actually publish a site, you need to deploy your application to services like AWS, Firebase, Vercel/Cloudflare, etc.
+## より実践的なユースケースのヒント
 
-Try deploying while investigating things like "Does it support Next.js (App Router)?", "Do I need to handle maintenance tasks like Node or Nginx?", "How to set environment variables and build/deploy flow?" etc.
+最後に、実際にe-commerceサイトを構築する際に調べる・考慮する必要があることの多いユースケースをいくつか紹介します。
+StripeのドキュメントURLをいくつか一緒に紹介しますので、「自分ならどのように実装するか？」をぜひ考えてみてください。
 
-https://aws.amazon.com/jp/blogs/news/amplify-next-js-13/
+### 1: ホスティングサービスへのデプロイ
+今回のワークショップでは、ローカル環境で作業を行いました。
+しかし実際にサイトを公開するには、AWSやfirebase, Vercel / Cloudflareなどにアプリケーションをデプロイする必要があります。
 
-https://vercel.com/docs/concepts/projects/environment-variables
+「Next.js (App Router)をサポートしているか？」「NodeやNginxなどの保守作業までやる必要のあるサービスか？」「環境変数やビルド・デプロイフローはどのように設定するのか？」などを調べながら、デプロイまで挑戦してみましょう。
 
-### 2: Databases & Inventory Management Systems
-Stripe alone cannot provide a database for inventory management. However, for large e-commerce sites that frequently conduct sales, strict inventory management is essential.
 
-Let's explore methods of realizing inventory management using tools such as Vercel Postgress or Cloudflare D1, and their integration with Stripe.
+### 2: データベースとの連携・在庫管理システム
+Stripe単独では、在庫管理のためのデータベースを用意することができません。
+しかし規模の大きい、セールなどを頻繁に行うe-commerceサイトでは、厳密な在庫管理が重要です。
+
+Vercel PostgressやCloudflare D1などを活用して、在庫管理を実現する方法とStripe連携について探索してみましょう。
 
 https://stripe.com/docs/payments/checkout/managing-limited-inventory
 
 https://vercel.com/docs/storage/vercel-postgres
 
-### 3: Subscriptions
-With Stripe, you can easily incorporate regular sales or subscriptions. Taking as an example the "furniture mail-order site" introduced as a sample in this workshop, please try to consider:
+### 3: 定期販売・サブスクリプション
+Stripeでは、定期販売やサブスクリプションについても簡単に組み込みができます。
+今回サンプルとして紹介した「家具の通販サイト」を例に、
+・どのようなサブスクリプションサービスが提供できそうか？
+・Stripeなら、どんな価格帯系を提案できそうか？
+・作成したNext.jsアプリケーションに、どのように組み込むか？
+・顧客の支払い情報やプラン変更を、どのようにサポートするか？
 
-- What kind of subscription service can you provide?
-- What kind of pricing system can be proposed with Stripe?
-- How will you integrate your created Next.js application?
-- How will you support changes in customer payment information or plan changes?
-
-and so on.
+などをぜひ考えてみてください。
 
 https://stripe.com/docs/billing/quickstart
 

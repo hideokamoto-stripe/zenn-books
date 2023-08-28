@@ -1,41 +1,45 @@
 ---
-title: "Before starting the workshop"
+title: "ワークショップを始める前に"
 ---
 
+StripeのE-commerceサイト開発ワークショップへようこそ！
+このワークショップでは、StripeとNext.jsを利用したシンプルなe-commerceサイトを作る方法を学びます。
 
-Welcome to the Stripe E-commerce Site Development Workshop!
-In this workshop, you'll learn how to create a simple e-commerce site using Stripe and Next.js.
+## 必須環境
 
+ワークショップまたはセルフペースでの勉強に利用する場合、以下の環境が準備できているかを事前に確認しましょう。
+特にターミナルな（所謂「黒い画面」）は、ライブラリのインストールやアプリのビルドで頻繁に登場します。
 
-## Prerequisites
-Before starting the workshop or self-paced study, make sure you've prepared the following environment. In particular, the terminal (the so-called "black screen") will frequently appear during library installation and app building.
+- Node.js verion12以上がインストールされている
+- Visual Studio CodeなどのIDEがインストールされている
+- ターミナルを利用したCLIコマンドの実行ができる
+- インターネットに接続でき、npm installでファイルのダウンロードができる
 
-- Node.js version 12 or higher is installed
-- An IDE such as Visual Studio Code is installed
-- You can execute CLI commands using a terminal
-- You have an internet connection and can download files using npm install
+## ワークショップの進め方
 
-## How to Proceed with the Workshop
-In every step, we provide "instructions with images," "commands to run," or "code to add."
+全てのステップで、「画像付きの手順」や「実行するコマンド」または「追加するコード」を指示しています。
 
-### Instructions with Images
-The main focus is on operating the Stripe dashboard and IDE.
-If necessary, direct access links are provided in the instructions, so feel free to use those as well.
+### 画像付きの手順
 
-### Commands to Run
-We use `npm` and `next` commands to install libraries and set up the development environment.
+基本的にはStripeダッシュボードまたはIDEでの操作がメインです。
+必要に応じて直接アクセスするリンクを記載している場合もありますので、あわせてご利用ください。
 
-Commands are described as "run npm run dev" or "enter npm run dev and press the Enter key." Copy and paste these commands into the terminal, or type them in directly to execute them.
+### 実行するコマンド
 
-To avoid confusion, all command examples omit the `%` and `$` symbols.
+`npm`や`next`コマンドをライブラリのインストールや開発環境の立ち上げに利用します。
 
-### Adding, Modifying, and Deleting Code
-In principle, we provide the complete code of the file you'll be modifying, including any differences. However, if the code is too long, it may be abbreviated with "//omitted" or similar.
+「`npm run dev`を実行しましょう」や「`npm run dev`と入力し、[Enter]キーを押しましょう」などと記載していますので、ターミナルにコマンドをコピー＆ペーストまたは直接入力して実行しましょう。
 
-When we instruct you to "add the following code to the file you created" or to modify the code, copy the code provided below the instruction and write it entirely into the target file.
+なお、混乱を避けるため、コマンド例ではすべて`%`や`$`を省略しています。
 
-**Example of Adding the Entire Code**
+### 追加・変更・削除するコード
 
+原則として、変更するファイルのコードは差分を含めて全て記載しています。
+ただし、あまりにも長いコードになる場合は`//中略`などで省略しています。
+
+「作成したファイルに、以下のコードを追加します。」のように追加や書き換えを指示している場合、その下にあるコードを対象のファイルに丸ごと書き写しましょう。
+
+**全て追加の例**
 ```js
 import Stripe from 'stripe'
 
@@ -44,11 +48,9 @@ export async function POST(req, res) {
 }  
 ```
 
-In cases where we provide instructions like "Modify `app/checkout_session/routes.js` as follows," the code example will show + and - symbols on the left side to indicate additions and deletions.
+「`app/checkout_session/routes.js`を以下のように変更します。」などと記載している場合、下記の例のようにコードの左側に[+]や[-]が表示されています。
 
-**Example with Modifications**
-
-
+**変更がある例**
 ```diff js
 export async function POST(req, res) {
 -  return res.status(405).end()
@@ -56,19 +58,21 @@ export async function POST(req, res) {
 }  
 ```
 
-Please remove the lines marked with - from the original code.
-The lines marked with + are the new code to be added. Use the code before and after as a guide to where the additions should be placed.
+[-]の行は元のコードから削除してください。
+[+]の行は新しく追加するコードです。前後のコードを目印に追加しましょう。
 
-Note that on Zenn, when you copy the code that includes `+` and `-` symbols, these symbols will be excluded during pasting.
+なお、Zennでは、[+]や[-]を含む形でコピーしても、ペースト時には両記号は除外されています。
 
-## License
-This material is licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) License.
-https://creativecommons.org/licenses/by/4.0/
+## ライセンス
 
-Within the scope of the license, you are free to reproduce or modify the material, including for commercial use.
+本資料は、クリエイティブ・コモンズ[表示 4.0 国際 (CC BY 4.0)]ライセンスです。
+https://creativecommons.org/licenses/by/4.0/deed.ja
 
-We would be delighted if you could leave a comment on the following page about the events where you used this material:
+ライセンスの条件に従う範囲内であれば、商用利用を含め、自由に複製または改変することができます。
+
+「どんなイベントで利用したか」を、以下のページでコメントして頂けると、大変喜びます。
 
 https://zenn.dev/stripe/scraps/508964ca5e6117
 
-Any feedback will be greatly appreciated and will help us improve our materials in the future.
+今後の資料作成の励みになりますので、ご協力いただけますと幸いです。
+
