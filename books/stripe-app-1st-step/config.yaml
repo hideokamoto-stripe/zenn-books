@@ -1,0 +1,25 @@
+title: "Stripe Apps開発入門 TypeScript/Reactではじめる決済ワークフローのカスタマイズ"
+summary: 
+  Stripe Appsは、オンライン決済に関わるにワークフローをカスタマイズするため、2022年春登場したStripeの新しい製品です。
+  StripeのダッシュボードやStripeとのシステム連携・ワークフローのカスタマイズなどを、ReactとTypeScriptそしてStripe Node SDKを使って実現します。
+
+  この本では、Stripe CLIを使ったStripe Appsアプリの開発方法と、自社専用のPrivateアプリ開発・配布方法を紹介します。
+  
+topics: []
+published: false
+price: 0 # 有料の場合200〜5000
+# 本に含めるチャプターを順番に並べましょう
+chapters:
+  - step0
+  - step1
+  - step2
+  - step3
+  - step4
+  - step5
+  - step6
+  - step7
+  - step8
+  - step9
+  - step10
+  - step11
+  - stepx
